@@ -23,6 +23,7 @@ class Lesson extends Model
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'status' => LessonStatus::class,
     ];
 
     public function instructor(): BelongsTo

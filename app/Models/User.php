@@ -11,6 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property  $created_at
+ * @property $updated_at
+ */
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -47,6 +52,7 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
         'is_approved' => 'boolean',
+        'role' => UserRole::class,
     ];
 
     public function profile(): HasOne
@@ -54,7 +60,7 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
-    public function lessonsAsInstructors(): HasMany
+    public function lessonsAsInstructor(): HasMany
     {
         return $this->hasMany(Lesson::class, 'instructor_id');
     }

@@ -82,7 +82,11 @@ return [
             ],
             // The types only available in this schema
             'types' => [
-                // ExampleType::class,
+                \App\GraphQL\Types\UserType::class,
+                \App\GraphQL\Types\ProfileType::class,
+                \App\GraphQL\Types\LessonType::class,
+                \App\GraphQL\Enums\LessonStatusEnum::class,
+                \App\GraphQL\Enums\UserRoleEnum::class
             ],
 
             // Laravel HTTP middleware

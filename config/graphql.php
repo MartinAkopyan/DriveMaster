@@ -76,27 +76,49 @@ return [
         'default' => [
             'query' => [
                 // ExampleQuery::class,
+                \App\GraphQL\Queries\User\UsersQuery::class,
+                \App\GraphQL\Queries\User\UserQuery::class
             ],
             'mutation' => [
                 // ExampleMutation::class,
+                \App\GraphQL\Mutations\Auth\LoginMutation::class
             ],
             // The types only available in this schema
             'types' => [
+                \App\GraphQL\Enums\LessonStatusEnum::class,
+                \App\GraphQL\Enums\UserRoleEnum::class,
                 \App\GraphQL\Types\UserType::class,
                 \App\GraphQL\Types\ProfileType::class,
                 \App\GraphQL\Types\LessonType::class,
-                \App\GraphQL\Enums\LessonStatusEnum::class,
-                \App\GraphQL\Enums\UserRoleEnum::class
+                \App\GraphQL\Types\AuthPayloadType::class
             ],
 
             // Laravel HTTP middleware
-            'middleware' => null,
+            'middleware' => ['auth:sanctum'],
 
             // Which HTTP methods to support; must be given in UPPERCASE!
             'method' => ['GET', 'POST'],
 
             // An array of middlewares, overrides the global ones
             'execution_middleware' => null,
+        ],
+        'auth' => [
+            'query' => [
+
+            ],
+
+            'types' => [
+                \App\GraphQL\Enums\LessonStatusEnum::class,
+                \App\GraphQL\Enums\UserRoleEnum::class,
+                \App\GraphQL\Types\UserType::class,
+                \App\GraphQL\Types\ProfileType::class,
+                \App\GraphQL\Types\LessonType::class,
+                \App\GraphQL\Types\AuthPayloadType::class
+            ],
+            'mutation' => [
+                \App\GraphQL\Mutations\Auth\LoginMutation::class
+            ],
+            'middleware' => [],
         ],
     ],
 

@@ -104,7 +104,7 @@ return [
         ],
         'auth' => [
             'query' => [
-
+                \App\GraphQL\Queries\CheckAuthQuery::class
             ],
 
             'types' => [

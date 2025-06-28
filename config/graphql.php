@@ -116,7 +116,8 @@ return [
                 \App\GraphQL\Types\AuthPayloadType::class
             ],
             'mutation' => [
-                \App\GraphQL\Mutations\Auth\LoginMutation::class
+                \App\GraphQL\Mutations\Auth\LoginMutation::class,
+                \App\GraphQL\Mutations\Auth\RegisterStudentMutation::class,
             ],
             'middleware' => [],
         ],
@@ -144,7 +145,7 @@ return [
     //     'message' => '',
     //     'locations' => []
     // ]
-    'error_formatter' => [Rebing\GraphQL\GraphQL::class, 'formatError'],
+    'error_formatter' => [\App\GraphQL\Error\GraphQLErrorHandler::class, 'format'],
 
     /*
      * Custom Error Handling
@@ -153,7 +154,7 @@ return [
      *
      * The default handler will pass exceptions to laravel Error Handling mechanism
      */
-    'errors_handler' => [Rebing\GraphQL\GraphQL::class, 'handleErrors'],
+    'errors_handler' => [\App\GraphQL\Error\GraphQLErrorHandler::class, 'handle'],
 
     /*
      * Options to limit the query complexity and depth. See the doc

@@ -53,7 +53,7 @@ class LoginMutation extends Mutation
         }
 
         return [
-            'token' => $user->createToken('graphql')->plainTextToken,
+            'token' => $user->createToken('auth_token')->plainTextToken,
             'user' => $user
         ];
     }

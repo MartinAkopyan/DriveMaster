@@ -62,7 +62,7 @@ class RegisterStudentMutation extends Mutation
     {
 
         try {
-            UserRegistrationService::registerStudent($args);
+            return UserRegistrationService::registerStudent($args);
         } catch(\Exception $e) {
             throw new \GraphQL\Error\Error('Registration failed: '.$e->getMessage());
         }

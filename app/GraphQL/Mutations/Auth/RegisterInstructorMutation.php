@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Mutations\Auth;
 
-use App\Models\User;
 use App\Services\UserRegistrationService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Facades\Hash;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Mutation;
 use Rebing\GraphQL\Support\SelectFields;
 
-class RegisterStudentMutation extends Mutation
+class RegisterInstructorMutation extends Mutation
 {
     protected $attributes = [
-        'name' => 'registerStudent',
-        'description' => 'A mutation for registering a student.'
+        'name' => 'registerInstructor',
+        'description' => 'A mutation for registering an instructor'
     ];
 
     public function type(): Type
@@ -44,25 +42,32 @@ class RegisterStudentMutation extends Mutation
             ],
             'password_confirmation' => [
                 'type' => Type::nonNull(Type::string()),
+                'rules' => ['required'],
+            ],
+            'phone' => [
+                'type' => Type::nonNull(Type::string()),
+                'rules' => ['required', 'unique:profiles,phone', 'regex:/^([0-9\s\-\+\(\)]*)$/'],
+            ],
+            'bio' => [
+                'type' => Type::string(),
+                'rules' => ['nullable', 'max:1000'],
+            ],
+            'experience_years' => [
+                'type' => Type::nonNull(Type::int()),
+                'rules' => ['required', 'numeric', 'min:1'],
+            ],
+            'car_model' => [
+                'type' => Type::string(),
+                'rules' => ['nullable', 'max:50'],
             ]
-        ];
-    }
-
-    public function validationErrorMessages(array $args = []): array
-    {
-        return [
-            'email.required' => 'Please enter your email address',
-            'email.email' => 'Please enter a valid email address',
-            'email.exists' => 'Sorry, this email address is already in use',
         ];
     }
 
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
-
         try {
-            return UserRegistrationService::registerStudent($args);
-        } catch(\Exception $e) {
+            return UserRegistrationService::registerInstructor($args);
+        } catch (\Throwable $e){
             throw new \GraphQL\Error\Error('Registration failed: '.$e->getMessage());
         }
     }

@@ -9,7 +9,7 @@ return [
 
         // The controller/method to use in GraphQL request.
         // Also supported array syntax: `[\Rebing\GraphQL\GraphQLController::class, 'query']`
-        'controller' => Rebing\GraphQL\GraphQLController::class . '@query',
+        'controller' => [\Rebing\GraphQL\GraphQLController::class, 'query'],
 
         // Any middleware for the graphql route group
         // This middleware will apply to all schemas
@@ -81,7 +81,7 @@ return [
             ],
             'mutation' => [
                 // ExampleMutation::class,
-                \App\GraphQL\Mutations\Auth\LoginMutation::class
+                \App\GraphQL\Mutations\Auth\LoginMutation::class,
             ],
             // The types only available in this schema
             'types' => [
@@ -108,16 +108,16 @@ return [
             ],
 
             'types' => [
-                \App\GraphQL\Enums\LessonStatusEnum::class,
                 \App\GraphQL\Enums\UserRoleEnum::class,
                 \App\GraphQL\Types\UserType::class,
                 \App\GraphQL\Types\ProfileType::class,
-                \App\GraphQL\Types\LessonType::class,
-                \App\GraphQL\Types\AuthPayloadType::class
+                \App\GraphQL\Types\AuthPayloadType::class,
+                \App\GraphQL\Types\LessonType::class
             ],
             'mutation' => [
                 \App\GraphQL\Mutations\Auth\LoginMutation::class,
                 \App\GraphQL\Mutations\Auth\RegisterStudentMutation::class,
+                \App\GraphQL\Mutations\Auth\RegisterInstructorMutation::class
             ],
             'middleware' => [],
         ],

@@ -33,10 +33,6 @@ class LessonType extends GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'description' => 'The student of the lesson',
             ],
-            'student' => [
-                'type' => Type::nonNull(GraphQL::type('User')),
-                'description' => 'The student of the lesson',
-            ],
             'start_time' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The start time of the lesson',
@@ -56,6 +52,10 @@ class LessonType extends GraphQLType
             'instructor' => [
                 'type' => Type::nonNull(GraphQL::type('User')),
                 'description' => 'The instructor of the lesson',
+            ],
+            'student' => [
+                'type' => Type::nonNull(GraphQL::type('User')),
+                'description' => 'The student of the lesson',
             ],
             'canBeCancelled' => [
                 'type' => Type::boolean(),

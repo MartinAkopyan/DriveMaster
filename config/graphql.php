@@ -81,7 +81,6 @@ return [
             ],
             'mutation' => [
                 // ExampleMutation::class,
-                \App\GraphQL\Mutations\Auth\LoginMutation::class,
             ],
             // The types only available in this schema
             'types' => [
@@ -111,8 +110,9 @@ return [
                 \App\GraphQL\Enums\UserRoleEnum::class,
                 \App\GraphQL\Types\UserType::class,
                 \App\GraphQL\Types\ProfileType::class,
+                \App\GraphQL\Types\LessonType::class,
+                \App\GraphQL\Enums\LessonStatusEnum::class,
                 \App\GraphQL\Types\AuthPayloadType::class,
-                \App\GraphQL\Types\LessonType::class
             ],
             'mutation' => [
                 \App\GraphQL\Mutations\Auth\LoginMutation::class,

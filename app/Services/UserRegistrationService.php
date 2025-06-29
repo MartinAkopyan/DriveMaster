@@ -23,9 +23,6 @@ class UserRegistrationService
         ];
     }
 
-    /**
-     * @throws \Throwable
-     */
     public static function registerInstructor(array $userData): array
     {
         return DB::transaction(function () use ($userData) {

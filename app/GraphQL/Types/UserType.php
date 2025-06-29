@@ -48,7 +48,7 @@ class UserType extends GraphQLType
             'profile' => [
                 'type' => GraphQL::type('Profile'),
                 'description' => 'The profile of the instructor',
-//                'resolve' => fn(User $user) => $user->profile ?? null
+                'resolve' => fn(User $user) => $user->profile ?? null
             ],
             'lessonsAsInstructor' => [
                 'type' => Type::listOf(GraphQL::type('Lesson')),

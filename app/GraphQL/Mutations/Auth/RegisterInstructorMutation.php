@@ -67,7 +67,7 @@ class RegisterInstructorMutation extends Mutation
     {
         try {
             return UserRegistrationService::registerInstructor($args);
-        } catch (\Throwable $e){
+        } catch (\Exception $e){
             throw new \GraphQL\Error\Error('Registration failed: '.$e->getMessage());
         }
     }

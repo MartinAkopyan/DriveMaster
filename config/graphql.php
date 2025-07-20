@@ -77,7 +77,8 @@ return [
             'query' => [
                 // ExampleQuery::class,
                 \App\GraphQL\Queries\User\UsersQuery::class,
-                \App\GraphQL\Queries\User\UserQuery::class
+                \App\GraphQL\Queries\User\UserQuery::class,
+                \App\GraphQL\Queries\MeQuery::class,
             ],
             'mutation' => [
                 // ExampleMutation::class,
@@ -103,7 +104,9 @@ return [
         ],
         'auth' => [
             'query' => [
-                \App\GraphQL\Queries\CheckAuthQuery::class
+                \App\GraphQL\Queries\CheckAuthQuery::class,
+                \App\GraphQL\Queries\User\UsersQuery::class,
+
             ],
 
             'types' => [

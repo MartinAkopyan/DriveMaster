@@ -40,14 +40,14 @@ class ApproveInstructor extends Mutation
 
         $admin = auth()->user();
 
-        if (!$admin || $admin->role !== UserRole::ADMIN) {
+        if (!$admin || !$admin->isAdmin()) {
             throw new \Exception('Unauthorized: Only admins can approve instructors.');
         }
 
 
         $instructor = User::findOrFail($args['id']);
 
-        if ($instructor->role !== UserRole::INSTRUCTOR) {
+        if (!$instructor->isInstructor()) {
             throw new \Exception('User is not an instructor.');
         }
 

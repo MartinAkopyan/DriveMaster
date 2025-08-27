@@ -51,8 +51,9 @@ class ApproveInstructor extends Mutation
             throw new \Exception('User is not an instructor.');
         }
 
-        $instructor->is_approved = true;
-        $instructor->save();
+        $instructor->update([
+            'is_approved' => true,
+        ]);
 
         return $instructor;
     }

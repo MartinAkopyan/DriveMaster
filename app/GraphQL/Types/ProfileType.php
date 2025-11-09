@@ -48,7 +48,8 @@ class ProfileType extends GraphQLType
             ],
             'user' => [
                 'type' => Type::nonNull(GraphQL::type('User')),
-                'description' => 'The user data of the instructor'
+                'description' => 'The user data of the instructor',
+                'resolve' => fn($user) => $user->role->value,
             ]
         ];
     }

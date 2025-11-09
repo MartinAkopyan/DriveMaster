@@ -13,9 +13,9 @@ class UserRoleEnum extends EnumType
         'name' => 'UserRoleEnum',
         'description' => 'The types of user roles',
         'values' => [
-            'ADMIN' => UserRole::ADMIN->value,
-            'INSTRUCTOR' => UserRole::INSTRUCTOR->value,
-            'STUDENT' => UserRole::STUDENT->value,
+            'admin' => UserRole::ADMIN->value,
+            'instructor' => UserRole::INSTRUCTOR->value,
+            'student' => UserRole::STUDENT->value,
         ],
     ];
 }

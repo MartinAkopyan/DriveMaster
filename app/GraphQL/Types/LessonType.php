@@ -44,6 +44,7 @@ class LessonType extends GraphQLType
             'status' => [
                 'type' => Type::nonNull(GraphQL::type('LessonStatusEnum')),
                 'description' => 'The status of the lesson',
+                'resolve' => fn($lesson) => $lesson->status->value,
             ],
             'notes' => [
                 'type' => Type::string(),

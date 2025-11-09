@@ -31,7 +31,8 @@ class UserType extends GraphQLType
             ],
             'role' => [
                 'type' => Type::nonNull(GraphQL::type('UserRoleEnum')),
-                'description' => 'The role of the user'
+                'description' => 'The role of the user',
+                'resolve' => fn($user) => $user->role->value,
             ],
             'email' => [
                 'type' => Type::nonNull(Type::string()),

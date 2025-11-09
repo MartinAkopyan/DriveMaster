@@ -13,10 +13,10 @@ class LessonStatusEnum extends EnumType
         'name' => 'LessonStatusEnum',
         'description' => 'The types of lesson status',
         'values' => [
-            'PLANNED' => LessonStatus::PLANNED->value,
-            'CONFIRMED' => LessonStatus::CONFIRMED->value,
-            'COMPLETED' => LessonStatus::COMPLETED->value,
-            'CANCELLED' => LessonStatus::CANCELLED->value,
+            'planned'   => LessonStatus::PLANNED->value,
+            'confirmed' => LessonStatus::CONFIRMED->value,
+            'completed' => LessonStatus::COMPLETED->value,
+            'cancelled' => LessonStatus::CANCELLED->value,
         ],
     ];
 }

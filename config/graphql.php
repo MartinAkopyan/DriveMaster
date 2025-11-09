@@ -85,6 +85,7 @@ return [
                 // ExampleMutation::class,
                 \App\GraphQL\Mutations\ApproveInstructor::class,
                 \App\GraphQL\Mutations\CreateLesson::class,
+                \App\GraphQL\Mutations\ConfirmLesson::class,
             ],
             // The types only available in this schema
             'types' => [

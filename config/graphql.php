@@ -79,6 +79,7 @@ return [
                 \App\GraphQL\Queries\User\UsersQuery::class,
                 \App\GraphQL\Queries\User\UserQuery::class,
                 \App\GraphQL\Queries\MeQuery::class,
+                \App\GraphQL\Queries\AvailableSlotsQuery::class,
             ],
             'mutation' => [
                 // ExampleMutation::class,
@@ -92,7 +93,8 @@ return [
                 \App\GraphQL\Types\UserType::class,
                 \App\GraphQL\Types\ProfileType::class,
                 \App\GraphQL\Types\LessonType::class,
-                \App\GraphQL\Types\AuthPayloadType::class
+                \App\GraphQL\Types\AuthPayloadType::class,
+                \App\GraphQL\Types\SlotType::class,
             ],
 
             // Laravel HTTP middleware

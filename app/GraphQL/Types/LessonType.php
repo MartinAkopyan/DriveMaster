@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Types;
 
+use App\Enums\LessonStatus;
 use App\Models\Lesson;
 use GraphQL\Type\Definition\Type;
 use Rebing\GraphQL\Support\Facades\GraphQL;
@@ -50,6 +51,14 @@ class LessonType extends GraphQLType
                 'type' => Type::string(),
                 'description' => 'The notes of the lesson',
             ],
+            'cancelled_by' => [
+                'type' => Type::int(),
+                'description' => 'The id of the user that cancelled the lesson',
+            ],
+            'cancel_reason' => [
+                'type' => Type::string(),
+                'description' => 'The reason for cancelling the lesson',
+            ],
             'instructor' => [
                 'type' => Type::nonNull(GraphQL::type('User')),
                 'description' => 'The instructor of the lesson',
@@ -58,13 +67,13 @@ class LessonType extends GraphQLType
                 'type' => Type::nonNull(GraphQL::type('User')),
                 'description' => 'The student of the lesson',
             ],
-            'canBeCancelled' => [
-                'type' => Type::boolean(),
-                'description' => 'The status of the lesson can be cancelled',
+            'created_at' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'The date of creation of the lesson',
             ],
-            'getDurationAttribute' => [
-                'type' => Type::int(),
-                'description' => 'The duration of the lesson',
+            'updated_at' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'The date of update of the lesson',
             ]
         ];
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\GraphQL\Mutations;
 
 use App\Enums\LessonStatus;
+use App\Models\Lesson;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -46,7 +47,7 @@ class CancelLesson extends Mutation
         }
 
         if (!in_array($lesson->status, [LessonStatus::CONFIRMED, LessonStatus::PLANNED], true)) {
-            throw new \Exception("Lesson with status '{$lesson->status}' can't be cancelled.");
+            throw new \Exception("Lesson with status '{$lesson->status->value}' can't be cancelled.");
         }
 
         if ($lesson->start_time->isPast()) {

@@ -80,6 +80,7 @@ return [
                 \App\GraphQL\Queries\User\UserQuery::class,
                 \App\GraphQL\Queries\MeQuery::class,
                 \App\GraphQL\Queries\AvailableSlotsQuery::class,
+                \App\GraphQL\Queries\MyLessons::class,
             ],
             'mutation' => [
                 // ExampleMutation::class,

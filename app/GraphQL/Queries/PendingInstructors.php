@@ -13,11 +13,11 @@ use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 use Rebing\GraphQL\Support\SelectFields;
 
-class AvailableInstructors extends Query
+class PendingInstructors extends Query
 {
     protected $attributes = [
-        'name' => 'availableInstructors',
-        'description' => 'A query for available instructors',
+        'name' => 'pendingInstructors',
+        'description' => 'A query for a pending instructor as admin',
     ];
 
     public function type(): Type
@@ -32,16 +32,27 @@ class AvailableInstructors extends Query
         ];
     }
 
+    /**
+     * @throws \Exception
+     */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
+
+
         /** @var SelectFields $fields */
         $fields = $getSelectFields();
         $select = $fields->getSelect();
         $with = $fields->getRelations();
 
+        $user = auth()->user();
+
+        if (!$user->isAdmin()) {
+            throw new \Exception('Unauthorized: only admins allowed');
+        }
+
         return User::query()
             ->where('role', '=', UserRole::INSTRUCTOR)
-            ->where('is_approved', '=', true)
+            ->where('is_approved', '=', false)
             ->select($select)
             ->with($with)
             ->get();

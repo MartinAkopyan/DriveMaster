@@ -81,6 +81,7 @@ return [
                 \App\GraphQL\Queries\MeQuery::class,
                 \App\GraphQL\Queries\AvailableSlotsQuery::class,
                 \App\GraphQL\Queries\MyLessons::class,
+                \App\GraphQL\Queries\AvailableInstructors::class,
             ],
             'mutation' => [
                 // ExampleMutation::class,

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class UserRegistrationService
                 'name' => $userData['name'],
                 'email' => $userData['email'],
                 'password' => Hash::make($userData['password']),
-                'role' => 'instructor',
+                'role' => UserRole::INSTRUCTOR,
             ]);
 
             Profile::create([

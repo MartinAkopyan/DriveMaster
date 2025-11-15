@@ -30,15 +30,19 @@ class InstructorSchedule extends Query
         return [
             'instructor_id' => [
                 'type' => Type::int(),
+                'description' => 'Instructor ID (optional for instructors, required for admins if they are not instructors)',
             ],
             'date_from' => [
                 'type' => Type::string(),
+                'description' => 'Filter lessons from this date (Y-m-d format)',
             ],
             'date_to' => [
                 'type' => Type::string(),
+                'description' => 'Filter lessons until this date (Y-m-d format)',
             ],
             'lesson_status' => [
                 'type' => GraphQL::type('LessonStatusEnum'),
+                'description' => 'Filter by lesson status',
             ]
         ];
     }

@@ -50,14 +50,6 @@ class InstructorSchedule extends Query
         $select = $fields->getSelect();
         $with = $fields->getRelations();
 
-        \DB::listen(function ($query) {
-            \Log::info('SQL', [
-                'sql' => $query->sql,
-                'bindings' => $query->bindings,
-                'time' => $query->time,
-            ]);
-        });
-
         $user = auth()->user();
         $instructor_id = $args['instructor_id'] ?? $user->id;
 

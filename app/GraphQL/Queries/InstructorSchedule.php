@@ -55,10 +55,13 @@ class InstructorSchedule extends Query
         $with = $fields->getRelations();
 
         $user = auth()->user();
-        $instructor_id = $args['instructor_id'] ?? $user->id;
+        $instructor_id = $args['instructor_id'] ?? null;
 
-        if ($user->isInstructor() && $user->id !== $instructor_id) {
-            throw new \Exception('Unauthorized: instructors can only view their own schedule');
+        if ($user->isInstructor()) {
+            if ($instructor_id !== null && $instructor_id !== $user->id) {
+                throw new \Exception('Unauthorized: instructors can only view their own schedule');
+            }
+            $instructor_id = $user->id;
         }
 
         if ($user->isStudent()) {

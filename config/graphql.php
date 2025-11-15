@@ -83,6 +83,7 @@ return [
                 \App\GraphQL\Queries\MyLessons::class,
                 \App\GraphQL\Queries\AvailableInstructors::class,
                 \App\GraphQL\Queries\PendingInstructors::class,
+                \App\GraphQL\Queries\InstructorSchedule::class,
             ],
             'mutation' => [
                 // ExampleMutation::class,

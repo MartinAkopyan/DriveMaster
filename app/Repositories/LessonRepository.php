@@ -37,7 +37,7 @@ class LessonRepository
             $statusStr
         );
 
-        return Cache::tags(['lessons', "Lessons:instructor:{$instructorId}"])
+        return Cache::tags(['lessons', "lessons:instructor:{$instructorId}"])
             ->remember($cacheKey, 600, function () use ($instructorId, $dateFrom, $dateTo, $status) {
                 $query = Lesson::where('instructor_id', $instructorId)
                     ->whereBetween('start_time', [$dateFrom->startOfDay(), $dateTo->endOfDay()])
@@ -97,6 +97,7 @@ class LessonRepository
         $lesson = Lesson::create($data);
 
         $this->invalidateInstructorCache($lesson->instructor_id);
+        $this->invalidateStudentCache($lesson->student_id);
 
         return $lesson->fresh(['instructor', 'student']);
     }
@@ -108,6 +109,7 @@ class LessonRepository
         ]);
 
         $this->invalidateInstructorCache($lesson->instructor_id);
+        $this->invalidateStudentCache($lesson->student_id);
 
         return $lesson->fresh(['instructor', 'student']);
     }
@@ -121,24 +123,38 @@ class LessonRepository
         ]);
 
         $this->invalidateInstructorCache($lesson->instructor_id);
+        $this->invalidateStudentCache($lesson->student_id);
 
         return $lesson->fresh(['instructor', 'student']);
     }
 
     public function getUpcomingLessons(int $userId, UserRole $role): Collection
     {
-        $column = $role === UserRole::INSTRUCTOR ? UserRole::INSTRUCTOR : UserRole::STUDENT;
-        $cacheKey = "upcoming_lessons:{$role}:{$userId}";
+        $roleStr = $role === UserRole::INSTRUCTOR ? 'instructor' : 'student';
+        $cacheKey = "upcoming_lessons:{$roleStr}:{$userId}";
 
-        return Cache::tags(['lessons', "lessons:{$role}:{$userId}"])
-            ->remember($cacheKey, 300, function () use ($column, $userId) {
+        return Cache::tags(['lessons', "lessons:{$roleStr}:{$userId}"])
+            ->remember($cacheKey, 300, function () use ($userId, $role) {
+                $column = $role === UserRole::INSTRUCTOR ? 'instructor_id' : 'student_id';
+
                 return Lesson::where($column, $userId)
                     ->whereIn('status', [LessonStatus::PLANNED, LessonStatus::CONFIRMED])
                     ->where('start_time', '>', now())
+                    ->with(['instructor', 'student'])
                     ->orderBy('start_time')
                     ->get();
             });
     }
+
+    public function getExpiredPendingLessons(Carbon $olderThan): Collection
+    {
+        return Lesson::where('status', LessonStatus::PLANNED)
+            ->where('created_at', '<', $olderThan)
+            ->where('start_time', '>', now())
+            ->with(['instructor', 'student'])
+            ->get();
+    }
+
 
     private function invalidateInstructorCache(int $instructorId): void
     {

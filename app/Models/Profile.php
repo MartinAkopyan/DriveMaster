@@ -15,7 +15,8 @@ class Profile extends Model
         'phone',
         'bio',
         'experience_years',
-        'car_model'
+        'car_model',
+        'rejection_reason'
     ];
 
     public function user(): BelongsTo

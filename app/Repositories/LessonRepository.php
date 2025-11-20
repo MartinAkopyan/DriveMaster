@@ -28,7 +28,7 @@ class LessonRepository
         ?LessonStatus $status = null
     ): Collection
     {
-        $statusStr = $status->value ?? 'all';
+        $statusStr = $status?->value ?? 'all';
         $cacheKey = sprintf(
             'instructor_schedule:%d:%s:%s:%s',
             $instructorId,

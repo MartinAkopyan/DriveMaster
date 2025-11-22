@@ -6,7 +6,24 @@ use App\Enums\LessonStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * App\Models\Lesson
+ *
+ * @property int $id
+ * @property int $instructor_id
+ * @property int $student_id
+ * @property Carbon $start_time
+ * @property Carbon $end_time
+ * @property LessonStatus $status
+ * @property string|null $notes
+ * @property int|null $cancelled_by
+ * @property string|null $cancel_reason
+ *
+ * @property-read User $instructor
+ * @property-read User $student
+ */
 class Lesson extends Model
 {
     use HasFactory;

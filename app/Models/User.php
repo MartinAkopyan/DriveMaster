@@ -4,18 +4,29 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * @property  $created_at
- * @property $updated_at
- * @property Profile|null $profile
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property UserRole $role
+ * @property bool $is_approved
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
+ *
+ * @property-read Profile|null $profile
+ * @property-read Collection|Lesson[] $lessonsAsInstructor
+ * @property-read Collection|Lesson[] $lessonsAsStudent
  */
 
 class User extends Authenticatable

@@ -65,6 +65,7 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_approved' => 'boolean',
         'role' => UserRole::class,
+        'deleted_at' => 'datetime'
     ];
 
     public function profile(): HasOne

@@ -52,7 +52,7 @@ class UserRepository
 
     }
 
-    public function rejectInstructor(User $instructor, ?string $reason = null): void
+    public function rejectInstructor(User $instructor, ?string $reason = null): User
     {
         if ($reason !== null && $instructor->profile) {
             $instructor->profile->update([
@@ -61,6 +61,63 @@ class UserRepository
         }
 
         $instructor->delete();
+
+        return $instructor;
+    }
+
+    public function getRejectedInstructors(?string $dateFrom, ?string $dateTo): Collection
+    {
+        $query = User::onlyTrashed()
+            ->where('role', UserRole::INSTRUCTOR)
+            ->with('profile');
+
+        if ($dateFrom) {
+            $query->whereDate('deleted_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $query->whereDate('deleted_at', '<=', $dateTo);
+        }
+
+        return $query->orderBy('deleted_at', 'desc')->get();
+    }
+
+    public function getInstructorStats(): array
+    {
+        return [
+            'approved' => User::where('role', UserRole::INSTRUCTOR)
+                ->where('is_approved', true)
+                ->count(),
+
+            'pending' => User::where('role', UserRole::INSTRUCTOR)
+                ->where('is_approved', false)
+                ->count(),
+
+            'rejected' => User::onlyTrashed()
+            ->where('role', UserRole::INSTRUCTOR)
+                ->count(),
+
+            'total_applications' => User::withTrashed()
+                ->where('role', UserRole::INSTRUCTOR)
+                ->count(),
+        ];
+    }
+
+    public function restoreInstructor(int $instructorId): User
+    {
+        $instructor = User::onlyTrashed()
+        ->where('role', UserRole::INSTRUCTOR)
+            ->findOrFail($instructorId);
+
+        if ($instructor->profile) {
+            $instructor->profile->update([
+                'rejection_reason' => null,
+            ]);
+        }
+
+        $instructor->restore();
+
+        return $instructor->fresh('profile');
     }
 
     public function findInstructor(int $instructorId): ?User

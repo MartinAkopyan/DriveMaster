@@ -21,12 +21,7 @@ class LessonRepository
             })->exists();
     }
 
-    public function getInstructorSchedule(
-        int           $instructorId,
-        Carbon        $dateFrom,
-        Carbon        $dateTo,
-        ?LessonStatus $status = null
-    ): Collection
+    public function getInstructorSchedule(int $instructorId, Carbon $dateFrom, Carbon $dateTo, ?LessonStatus $status = null): Collection
     {
         $statusStr = $status?->value ?? 'all';
         $cacheKey = sprintf(

@@ -160,7 +160,7 @@ class LessonBookingService
     {
         $baseTime = Carbon::parse($date)->setTime(8, 0);
         $startTime = $baseTime->copy()->addHours(($slot - 1) * 2);
-        $endTime = $starTime->copy()->addHours(2);
+        $endTime = $startTime->copy()->addHours(2);
 
         return [$startTime, $endTime];
     }

@@ -72,7 +72,8 @@ class LessonBookingService
             throw new LessonBookingException('Only instructors can confirm lessons');
         }
 
-        $lesson = Lesson::findOrFail($lessonId);
+        $lesson = Lesson::with(['instructor', 'student'])
+            ->findOrFail($lessonId);
 
         if ($lesson->instructor_id !== $instructor->id) {
             throw new LessonBookingException('You can only confirm your own lessons');
@@ -90,7 +91,8 @@ class LessonBookingService
      */
     public function cancelLesson(int $lessonId, User $user, string $reason = null): Lesson
     {
-        $lesson = Lesson::findOrFail($lessonId);
+        $lesson = Lesson::with(['instructor', 'student'])
+            ->findOrFail($lessonId);
 
         $this->ensureUserCanCancel($user, $lesson);
 

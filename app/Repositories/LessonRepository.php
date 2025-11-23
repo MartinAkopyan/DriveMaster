@@ -94,7 +94,7 @@ class LessonRepository
         $this->invalidateInstructorCache($lesson->instructor_id);
         $this->invalidateStudentCache($lesson->student_id);
 
-        return $lesson->fresh(['instructor', 'student']);
+        return $lesson->loadMissing(['instructor', 'student']);
     }
 
     public function confirmLesson(Lesson $lesson): Lesson
@@ -106,7 +106,7 @@ class LessonRepository
         $this->invalidateInstructorCache($lesson->instructor_id);
         $this->invalidateStudentCache($lesson->student_id);
 
-        return $lesson->fresh(['instructor', 'student']);
+        return $lesson;
     }
 
     public function cancelLesson(Lesson $lesson, int $canceledBy, ?string $reason = null): Lesson
@@ -120,7 +120,7 @@ class LessonRepository
         $this->invalidateInstructorCache($lesson->instructor_id);
         $this->invalidateStudentCache($lesson->student_id);
 
-        return $lesson->fresh(['instructor', 'student']);
+        return $lesson;
     }
 
     public function getUpcomingLessons(int $userId, UserRole $role): Collection

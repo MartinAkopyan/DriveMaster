@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Mutations;
 
-use App\Enums\LessonStatus;
 use App\Exceptions\LessonBookingException;
-use App\GraphQL\Enums\LessonStatusEnum;
 use App\Models\Lesson;
-use App\Models\User;
 use App\Services\LessonBookingService;
-use Carbon\Carbon;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -27,8 +23,7 @@ class BookLesson extends Mutation
 
     public function __construct(
         private readonly LessonBookingService $lessonService
-    )
-    {}
+    ){}
 
     public function type(): Type
     {

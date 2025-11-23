@@ -33,12 +33,6 @@ class AvailableInstructors extends Query
 
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
-        \DB::enableQueryLog();
-
-        $result = $this->userRepo->getApprovedInstructors();
-
-        \Log::info(\DB::getQueryLog());
-
-        return $result;
+        return $this->userRepo->getApprovedInstructors();
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Mutations;
 
-use App\Enums\LessonStatus;
-use App\Models\Lesson;
+use App\Exceptions\LessonBookingException;
+use App\Services\LessonBookingService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -19,6 +19,10 @@ class ConfirmLesson extends Mutation
         'name' => 'confirmLesson',
         'description' => 'A mutation for confirming lesson'
     ];
+
+    public function __construct(
+        private readonly LessonBookingService $lessonService
+    ){}
 
     public function type(): Type
     {
@@ -34,28 +38,13 @@ class ConfirmLesson extends Mutation
         ];
     }
 
+    /**
+     * @throws LessonBookingException
+     */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
     {
         $instructor = auth()->user();
 
-        if ( !$instructor || !$instructor->isInstructor()) {
-            throw new \Exception('Unauthorized: you can not confirm this lesson');
-        }
-
-        $lesson = Lesson::findOrFail($args['lesson_id']);
-
-        if ($lesson->status !== LessonStatus::PLANNED) {
-            throw new \Exception('Only planned lessons can be confirmed');
-        }
-
-        if ($instructor->id !== $lesson->instructor_id) {
-            throw new \Exception('Unauthorized: only instructor of this lesson can confirm it');
-        }
-
-        $lesson->update([
-            'status' => LessonStatus::CONFIRMED
-        ]);
-
-        return $lesson;
+        return $this->lessonService->confirmLesson($args['lesson_id'], $instructor);
     }
 }

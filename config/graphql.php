@@ -88,6 +88,7 @@ return [
             'mutation' => [
                 // ExampleMutation::class,
                 \App\GraphQL\Mutations\ApproveInstructor::class,
+                \App\GraphQL\Mutations\RejectInstructor::class,
                 \App\GraphQL\Mutations\BookLesson::class,
                 \App\GraphQL\Mutations\ConfirmLesson::class,
                 \App\GraphQL\Mutations\CancelLesson::class,

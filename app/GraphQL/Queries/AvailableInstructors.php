@@ -6,9 +6,11 @@ namespace App\GraphQL\Queries;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 use Rebing\GraphQL\Support\SelectFields;
@@ -20,30 +22,23 @@ class AvailableInstructors extends Query
         'description' => 'A query for available instructors',
     ];
 
+    public function __construct(
+        protected readonly UserRepository $userRepo
+    ){}
+
     public function type(): Type
     {
         return Type::listOf(GraphQL::type('User'));
     }
 
-    public function args(): array
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
-        return [
+        \DB::enableQueryLog();
 
-        ];
-    }
+        $result = $this->userRepo->getApprovedInstructors();
 
-    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
-    {
-        /** @var SelectFields $fields */
-        $fields = $getSelectFields();
-        $select = $fields->getSelect();
-        $with = $fields->getRelations();
+        \Log::info(\DB::getQueryLog());
 
-        return User::query()
-            ->where('role', '=', UserRole::INSTRUCTOR)
-            ->where('is_approved', '=', true)
-            ->select($select)
-            ->with($with)
-            ->get();
+        return $result;
     }
 }

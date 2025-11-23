@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Queries;
 
-use App\Models\Lesson;
+use App\Enums\LessonStatus;
+use App\Repositories\LessonRepository;
 use Carbon\Carbon;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 use Rebing\GraphQL\Support\SelectFields;
@@ -19,6 +21,10 @@ class InstructorSchedule extends Query
         'name' => 'instructorSchedule',
         'description' => 'A query for a instructor schedule',
     ];
+
+    public function __construct(
+        protected readonly LessonRepository $lessonRepo
+    ){}
 
     public function type(): Type
     {
@@ -47,47 +53,48 @@ class InstructorSchedule extends Query
         ];
     }
 
-    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
+    /**
+     * @throws \Exception
+     */
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
-        /** @var SelectFields $fields */
-        $fields = $getSelectFields();
-        $select = $fields->getSelect();
-        $with = $fields->getRelations();
-
         $user = auth()->user();
-        $instructor_id = $args['instructor_id'] ?? null;
+        $instructorId = $args['instructor_id'] ?? null;
 
         if ($user->isInstructor()) {
-            if ($instructor_id !== null && $instructor_id !== $user->id) {
+            if ($instructorId !== null && $instructorId !== $user->id) {
                 throw new \Exception('Unauthorized: instructors can only view their own schedule');
             }
-            $instructor_id = $user->id;
+            $instructorId = $user->id;
         }
 
         if ($user->isStudent()) {
             throw new \Exception('Unauthorized: students cannot view instructor schedules');
         }
 
-        if ($user->isAdmin() && !isset($args['instructor_id'])) {
-            throw new \Exception('You should provide instructor id to view instructor schedules');
+        if ($user->isAdmin() && $instructorId === null) {
+            throw new \Exception('Admin must provide instructor_id to view schedules');
         }
 
-        $query = Lesson::where('instructor_id', $instructor_id)
-            ->select($select)
-            ->with($with);
+        // Даты
+        $dateFrom = isset($args['date_from'])
+            ? Carbon::parse($args['date_from'])
+            : Carbon::now();
 
-        if (isset($args['date_from'])) {
-            $query->where('start_time', '>=', Carbon::parse($args['date_from'])->startOfDay());
-        }
+        $dateTo = isset($args['date_to'])
+            ? Carbon::parse($args['date_to'])
+            : Carbon::now()->addMonth();
 
-        if (isset($args['date_to'])) {
-            $query->where('start_time', '<=', Carbon::parse($args['date_to'])->endOfDay());
-        }
-
+        $status = null;
         if (isset($args['lesson_status'])) {
-            $query->where('status', $args['lesson_status']);
+            $status = LessonStatus::from($args['lesson_status']);
         }
 
-        return $query->orderBy('start_time')->get();
+        return $this->lessonRepo->getInstructorSchedule(
+            $instructorId,
+            $dateFrom,
+            $dateTo,
+            $status
+        );
     }
 }

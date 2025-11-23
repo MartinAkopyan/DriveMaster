@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\GraphQL\Mutations;
 
 use App\Enums\LessonStatus;
+use App\Exceptions\LessonBookingException;
 use App\Models\Lesson;
+use App\Services\LessonBookingService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -20,6 +22,10 @@ class CancelLesson extends Mutation
         'description' => 'Cancel a planned or confirmed lesson (student or instructor)',
     ];
 
+    public function __construct(
+        private readonly LessonBookingService $lessonService
+    ){}
+
     public function type(): Type
     {
         return GraphQL::type('Lesson');
@@ -33,37 +39,15 @@ class CancelLesson extends Mutation
         ];
     }
 
+
     /**
-     * @throws \Exception
+     * @throws LessonBookingException
      */
-    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Lesson
     {
 
         $user = auth()->user();
-        $lesson = Lesson::findOrFail($args['lesson_id']);
 
-        if ($user->id !== $lesson->instructor_id && $user->id !== $lesson->student_id) {
-            throw new \Exception('Unauthorized: You can cancel only your own lessons.');
-        }
-
-        if (!in_array($lesson->status, [LessonStatus::CONFIRMED, LessonStatus::PLANNED], true)) {
-            throw new \Exception("Lesson with status '{$lesson->status->value}' can't be cancelled.");
-        }
-
-        if ($lesson->start_time->isPast()) {
-            throw new \Exception('You can\'t cancel a lesson that has already started');
-        }
-
-        if ($user->isStudent() && now()->diffInHours($lesson->start_time, false) < 12) {
-            throw new \Exception('Students must cancel the lesson at least 12 hours before the lesson');
-        }
-
-        $lesson->update([
-           'status' => LessonStatus::CANCELLED,
-           'cancelled_by' => $user->id,
-           'cancel_reason' => $args['reason'] ?? null,
-        ]);
-
-        return $lesson;
+        return $this->lessonService->cancelLesson($args['lesson_id'], $user, $args['reason'] ?? null);
     }
 }

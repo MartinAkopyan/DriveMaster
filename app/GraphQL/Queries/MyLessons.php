@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Queries;
 
-use App\Models\Lesson;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Query;
 use Rebing\GraphQL\Support\SelectFields;
@@ -34,7 +34,7 @@ class MyLessons extends Query
     /**
      * @throws \Exception
      */
-    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
         /** @var SelectFields $fields */
         $fields = $getSelectFields();

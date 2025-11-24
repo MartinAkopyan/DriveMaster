@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Queries;
 
-use App\Enums\UserRole;
-use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Services\InstructorService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -23,7 +21,7 @@ class AvailableInstructors extends Query
     ];
 
     public function __construct(
-        protected readonly UserRepository $userRepo
+        protected readonly InstructorService $instructorService
     ){}
 
     public function type(): Type
@@ -33,6 +31,6 @@ class AvailableInstructors extends Query
 
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
-        return $this->userRepo->getApprovedInstructors();
+        return $this->instructorService->getAvailableInstructors();
     }
 }

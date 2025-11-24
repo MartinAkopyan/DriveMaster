@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\GraphQL\Queries;
 
 use App\Enums\LessonStatus;
-use App\Repositories\LessonRepository;
+use App\Services\LessonBookingService;
 use Carbon\Carbon;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -23,7 +23,7 @@ class InstructorSchedule extends Query
     ];
 
     public function __construct(
-        protected readonly LessonRepository $lessonRepo
+        protected readonly LessonBookingService $lessonService
     ){}
 
     public function type(): Type
@@ -61,22 +61,6 @@ class InstructorSchedule extends Query
         $user = auth()->user();
         $instructorId = $args['instructor_id'] ?? null;
 
-        if ($user->isInstructor()) {
-            if ($instructorId !== null && $instructorId !== $user->id) {
-                throw new \Exception('Unauthorized: instructors can only view their own schedule');
-            }
-            $instructorId = $user->id;
-        }
-
-        if ($user->isStudent()) {
-            throw new \Exception('Unauthorized: students cannot view instructor schedules');
-        }
-
-        if ($user->isAdmin() && $instructorId === null) {
-            throw new \Exception('Admin must provide instructor_id to view schedules');
-        }
-
-        // Даты
         $dateFrom = isset($args['date_from'])
             ? Carbon::parse($args['date_from'])
             : Carbon::now();
@@ -90,7 +74,8 @@ class InstructorSchedule extends Query
             $status = LessonStatus::from($args['lesson_status']);
         }
 
-        return $this->lessonRepo->getInstructorSchedule(
+        return $this->lessonService->getInstructorSchedule(
+            $user,
             $instructorId,
             $dateFrom,
             $dateTo,

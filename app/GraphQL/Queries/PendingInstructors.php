@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Queries;
 
-use App\Repositories\UserRepository;
+use App\Services\InstructorService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -21,7 +21,7 @@ class PendingInstructors extends Query
     ];
 
     public function __construct(
-        private readonly UserRepository $userRepo
+        private readonly InstructorService $instructorService
     ){}
 
     public function type(): Type
@@ -41,12 +41,8 @@ class PendingInstructors extends Query
      */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): Collection
     {
-        $user = auth()->user();
+        $admin = auth()->user();
 
-        if (!$user->isAdmin()) {
-            throw new \Exception('Unauthorized: only admins allowed');
-        }
-
-        return $this->userRepo->getPendingInstructors();
+        return $this->instructorService->getAvailableInstructors($admin);
     }
 }

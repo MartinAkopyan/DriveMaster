@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Queries;
 
-use App\Repositories\LessonRepository;
-use Carbon\Carbon;
+use App\Exceptions\LessonBookingException;
+use App\Services\LessonBookingService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -21,7 +21,7 @@ class AvailableSlotsQuery extends Query
     ];
 
     public function __construct(
-        private readonly LessonRepository $lessonRepo,
+        private readonly LessonBookingService $lessonService,
     ){}
 
     public function type(): Type
@@ -37,8 +37,11 @@ class AvailableSlotsQuery extends Query
         ];
     }
 
+    /**
+     * @throws LessonBookingException
+     */
     public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): array
     {
-        return $this->lessonRepo->getAvailableSlots($args['instructor_id'], Carbon::parse($args['date']));
+        return $this->lessonService->getAvailableSlots($args['instructor_id'], $args['date']);
     }
 }

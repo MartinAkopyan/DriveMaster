@@ -10,6 +10,7 @@ use App\Repositories\UserRepository;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class LessonBookingService
@@ -116,6 +117,46 @@ class LessonBookingService
             $lesson,
             0, // system user
             $reason
+        );
+    }
+
+    /**
+     * @throws LessonBookingException
+     */
+    public function getAvailableSlots(int $instructorId, string $date): array
+    {
+        if (!$this->userRepo->getApprovedInstructor($instructorId)) {
+            throw new LessonBookingException('Instructor not found or not approved');
+        }
+
+        return $this->lessonRepo->getAvailableSlots($instructorId, Carbon::parse($date));
+    }
+
+    /**
+     * @throws LessonBookingException
+     */
+    public function getInstructorSchedule(User $user, ?int $instructorId, Carbon $dateFrom, Carbon $dateTo, ?LessonStatus $status = null): Collection
+    {
+        if ($user->isInstructor()) {
+            if ($instructorId !== null && $instructorId !== $user->id) {
+                throw new LessonBookingException('Instructors can only view their own schedule');
+            }
+            $instructorId = $user->id;
+        }
+
+        if ($user->isStudent()) {
+            throw new LessonBookingException('Students cannot view instructor schedules');
+        }
+
+        if ($instructorId === null && $user->isAdmin()) {
+            throw new LessonBookingException('Admin must provide instructor_id to view schedules');
+        }
+
+        return $this->lessonRepo->getInstructorSchedule(
+            $instructorId,
+            $dateFrom,
+            $dateTo,
+            $status
         );
     }
 

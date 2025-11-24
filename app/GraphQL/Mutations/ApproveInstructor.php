@@ -6,7 +6,7 @@ namespace App\GraphQL\Mutations;
 
 use App\Exceptions\InstructorApprovalException;
 use App\Models\User;
-use App\Services\InstructorApprovalService;
+use App\Services\InstructorService;
 use Closure;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -22,7 +22,7 @@ class ApproveInstructor extends Mutation
     ];
 
     public function __construct(
-        private readonly InstructorApprovalService $approvalService
+        private readonly InstructorService $instructorService
     ){}
 
     public function type(): Type
@@ -48,6 +48,6 @@ class ApproveInstructor extends Mutation
 
         $admin = auth()->user();
 
-        return $this->approvalService->approveInstructor($args['instructor_id'], $admin);
+        return $this->instructorService->approveInstructor($args['instructor_id'], $admin);
     }
 }

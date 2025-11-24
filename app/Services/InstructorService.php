@@ -5,9 +5,10 @@ namespace App\Services;
 use App\Exceptions\InstructorApprovalException;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class InstructorApprovalService
+class InstructorService
 {
     public function __construct(
         private readonly UserRepository $userRepo
@@ -76,5 +77,34 @@ class InstructorApprovalService
         // TODO event(new InstructorRejected($instructor, $reason));
 
         return $instructor;
+    }
+
+    public function getAvailableInstructors(): Collection
+    {
+        return $this->userRepo->getApprovedInstructors();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getPendingInstructors(User $admin): Collection
+    {
+        if (!$admin->isAdmin()) {
+            throw new \Exception('Only admins can view this data');
+        }
+
+        return $this->userRepo->getPendingInstructors($admin);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getInstructorsStats(User $admin): array
+    {
+        if (!$admin->isAdmin()) {
+            throw new \Exception('Only admins can view this data');
+        }
+
+        return $this->userRepo->getInstructorStats();
     }
 }

@@ -43,6 +43,6 @@ class PendingInstructors extends Query
     {
         $admin = auth()->user();
 
-        return $this->instructorService->getAvailableInstructors($admin);
+        return $this->instructorService->getPendingInstructors($admin);
     }
 }

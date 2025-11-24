@@ -19,9 +19,7 @@ class InstructorService
      */
     public function approveInstructor(int $instructorId, User $admin): User
     {
-        if (!$admin->isAdmin()) {
-            throw new InstructorApprovalException('Only admins can approve instructor');
-        }
+        $this->ensureIsAdmin($admin);
 
         $instructor = $this->userRepo->findInstructor($instructorId);
 
@@ -51,9 +49,7 @@ class InstructorService
      */
     public function rejectInstructor(int $instructorId, User $admin, ?string $reason = null): User
     {
-        if (!$admin->isAdmin()) {
-            throw new InstructorApprovalException('Only admins can reject instructor');
-        }
+        $this->ensureIsAdmin($admin);
 
         $instructor = $this->userRepo->findInstructor($instructorId);
 
@@ -89,11 +85,9 @@ class InstructorService
      */
     public function getPendingInstructors(User $admin): Collection
     {
-        if (!$admin->isAdmin()) {
-            throw new \Exception('Only admins can view this data');
-        }
+        $this->ensureIsAdmin($admin);
 
-        return $this->userRepo->getPendingInstructors($admin);
+        return $this->userRepo->getPendingInstructors();
     }
 
     /**
@@ -101,10 +95,18 @@ class InstructorService
      */
     public function getInstructorsStats(User $admin): array
     {
-        if (!$admin->isAdmin()) {
-            throw new \Exception('Only admins can view this data');
-        }
+        $this->ensureIsAdmin($admin);
 
         return $this->userRepo->getInstructorStats();
+    }
+
+    /**
+     * @throws InstructorApprovalException
+     */
+    private function ensureIsAdmin(User $admin): bool
+    {
+        if (!$admin->isAdmin()) {
+            throw new InstructorApprovalException('Only admins can view this data');
+        }
     }
 }

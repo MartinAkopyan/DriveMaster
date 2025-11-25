@@ -16,7 +16,8 @@ class InstructorRejectedNotifications extends Notification implements ShouldQueu
      */
     public function __construct(
         public ?string $reason
-    ){
+    )
+    {
         $this->onQueue('default');
     }
 
@@ -53,15 +54,14 @@ class InstructorRejectedNotifications extends Notification implements ShouldQueu
         return $message;
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            //
+            'type' => 'instructor_rejected',
+            'title' => 'Application Not Approved',
+            'message' => 'Your instructor application was not approved. Please check your email for details.',
+            'reason' => $this->reason,
+            'rejected_at' => now()->toISOString(),
         ];
     }
 }

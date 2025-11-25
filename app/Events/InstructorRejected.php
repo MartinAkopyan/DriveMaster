@@ -20,7 +20,7 @@ class InstructorRejected
      */
     public function __construct(
         public User $instructor,
-        public string $reason,
+        public ?string $reason,
     ){}
 
     /**

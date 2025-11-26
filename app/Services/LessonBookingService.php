@@ -119,9 +119,9 @@ class LessonBookingService
 
         $this->checkCancellationDeadline($lesson, $user);
 
-        $lesson = $this->cancelLesson($lesson);
+        $lesson = $this->lessonRepo->cancelLesson($lesson, $user->id, $reason);
 
-        event(new LessonCancelled($lesson));
+        event(new LessonCancelled($lesson, $user->id, $reason));
 
         return $lesson;
 

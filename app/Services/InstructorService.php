@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\InstructorApproved;
 use App\Exceptions\InstructorApprovalException;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -41,6 +42,7 @@ class InstructorService
 
         // TODO event(new InstructorApproved($instructor));
 
+        event(new InstructorApproved($instructor));
         return $instructor;
     }
 

@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\InstructorApproved;
+use App\Events\LessonCreated;
+use App\Listeners\InvalidateInstructorCache;
+use App\Listeners\SendInstructorApprovalNotifications;
+use App\Listeners\SendLessonCreationNotifications;
+use App\Listeners\UpdateLessonCache;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -18,6 +24,10 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        InstructorApproved::class => [
+            SendInstructorApprovalNotifications::class,
+            InvalidateInstructorCache::class
+        ]
     ];
 
     /**

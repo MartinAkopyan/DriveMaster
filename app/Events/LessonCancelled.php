@@ -21,7 +21,7 @@ class LessonCancelled
     public function __construct(
         public Lesson $lesson,
         public ?int $cancelledBy,
-        public ?string $reason
+        public ?string $reason = null
     ){}
 
     /**

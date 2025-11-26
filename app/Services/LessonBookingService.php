@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Enums\LessonStatus;
+use App\Events\LessonCancelled;
+use App\Events\LessonCancelledBySystem;
+use App\Events\LessonConfirmed;
+use App\Events\LessonCreated;
 use App\Exceptions\LessonBookingException;
 use App\Models\Lesson;
 use App\Repositories\LessonRepository;
@@ -51,13 +55,17 @@ class LessonBookingService
                     throw new LessonBookingException('This time slot is already booked');
                 }
 
-                return $this->lessonRepo->createLesson([
+                $lesson = $this->lessonRepo->createLesson([
                     'instructor_id' => $instructor->id,
                     'student_id' => $student->id,
                     'start_time' => $startTime,
                     'end_time' => $endTime,
                     'notes' => $notes
                 ]);
+
+                event(new LessonCreated($lesson));
+
+                return $lesson;
             });
         } catch (LockTimeoutException $e) {
             throw new LessonBookingException('Too many simultaneous booking attempts. Please try again in a few seconds.');
@@ -84,7 +92,11 @@ class LessonBookingService
             throw new LessonBookingException('You can confirm only planned lessons');
         }
 
-        return $this->lessonRepo->confirmLesson($lesson);
+        $lesson = $this->lessonRepo->confirmLesson($lesson);
+
+        event(new LessonConfirmed($lesson));
+
+        return $lesson;
     }
 
     /**
@@ -107,17 +119,21 @@ class LessonBookingService
 
         $this->checkCancellationDeadline($lesson, $user);
 
-        return $this->lessonRepo->cancelLesson($lesson, $user->id, $reason);
+        $lesson = $this->cancelLesson($lesson);
+
+        event(new LessonCancelled($lesson));
+
+        return $lesson;
 
     }
 
     public function cancelLessonAutomatically(Lesson $lesson, string $reason): Lesson
     {
-        return $this->lessonRepo->cancelLesson(
-            $lesson,
-            0, // system user
-            $reason
-        );
+        $lesson = $this->cancelLessonAutomatically($lesson, 0, $reason);
+
+        event(new LessonCancelledBySystem($lesson, $reason));
+
+        return $lesson;
     }
 
     /**

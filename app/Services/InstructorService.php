@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\InstructorApproved;
+use App\Events\InstructorRejected;
 use App\Exceptions\InstructorApprovalException;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -40,9 +41,8 @@ class InstructorService
             'approved_by' => $admin->id
         ]);
 
-        // TODO event(new InstructorApproved($instructor));
-
         event(new InstructorApproved($instructor));
+
         return $instructor;
     }
 
@@ -72,7 +72,7 @@ class InstructorService
             'reason' => $reason,
         ]);
 
-        // TODO event(new InstructorRejected($instructor, $reason));
+        event(new InstructorRejected($instructor, $reason));
 
         return $instructor;
     }

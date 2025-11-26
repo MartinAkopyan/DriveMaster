@@ -43,19 +43,19 @@ class LessonConfirmedNotifications extends Notification implements ShouldQueue
                 ->subject('Lesson Confirmed')
                 ->line('You have successfully confirmed your lesson.')
                 ->line("Student: {$this->lesson->student->name}")
-                ->line("Date: {$lesson->start_time->format('F j, Y')}")
-                ->line("Time: {$lesson->start_time->format('H:i')} - {$lesson->end_time->format('H:i')}")
-                ->action('View Lesson Details', url("/lessons/{$lesson->id}"))
+                ->line("Date: {$this->lesson->start_time->format('F j, Y')}")
+                ->line("Time: {$this->lesson->start_time->format('H:i')} - {$this->lesson->end_time->format('H:i')}")
+                ->action('View Lesson Details', url("/lessons/{$this->lesson->id}"))
                 ->line('The student has been notified about the confirmation.');
         }
 
         return (new MailMessage)
             ->subject('Lesson Confirmed by Instructor')
             ->line("Great news! Your lesson has been confirmed!")
-            ->line("Instructor: {$lesson->instructor->name}")
-            ->line("Date: {$lesson->start_time->format('F j, Y')}")
-            ->line("Time: {$lesson->start_time->format('H:i')} - {$lesson->end_time->format('H:i')}")
-            ->action('View Lesson Details', url("/lessons/{$lesson->id}"))
+            ->line("Instructor: {$this->lesson->instructor->name}")
+            ->line("Date: {$this->lesson->start_time->format('F j, Y')}")
+            ->line("Time: {$this->lesson->start_time->format('H:i')} - {$this->lesson->end_time->format('H:i')}")
+            ->action('View Lesson Details', url("/lessons/{$this->lesson->id}"))
             ->line('See you at the lesson!');
     }
 

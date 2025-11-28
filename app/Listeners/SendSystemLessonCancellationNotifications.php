@@ -20,11 +20,10 @@ class SendSystemLessonCancellationNotifications implements ShouldQueue
         $reason = $event->reason;
 
         try {
-            $lesson->instructor->notify(new LessonCancelledNotifications($lesson, null ,$reason, true));
+            $lesson->instructor->notify(new LessonCancelledNotifications($lesson, null, $reason));
+            $lesson->student->notify(new LessonCancelledNotifications($lesson, null, $reason));
 
-            $lesson->student->notify(new LessonCancelledNotifications($lesson, null, $reason, false));
-
-            Log::info('Lesson cancellation notification sent', [
+            Log::info('System cancellation notification sent', [
                 'lesson_id' => $lesson->id,
                 'reason' => $reason,
             ]);

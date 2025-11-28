@@ -45,11 +45,16 @@ class CancelExpiredPendingLessons implements ShouldQueue
         ]);
     }
 
+
     public function failed(\Throwable $exception): void
     {
         Log::error('CancelExpiredPendingLessons job failed', [
             'error' => $exception->getMessage(),
+            'trace' => $exception->getTraceAsString(), // добавить trace
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
         ]);
-    }
 
+         //TODO: Mail::to('admin@example.com')->send(new JobFailedMail($exception));
+    }
 }

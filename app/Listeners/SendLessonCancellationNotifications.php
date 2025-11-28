@@ -24,12 +24,11 @@ class SendLessonCancellationNotifications implements ShouldQueue
 
         try {
             $lesson->instructor->notify(new LessonCancelledNotifications($lesson, $cancelledBy, $reason));
-
             $lesson->student->notify(new LessonCancelledNotifications($lesson, $cancelledBy, $reason));
 
             Log::info('Lesson cancellation notification sent', [
                 'lesson_id' => $lesson->id,
-                'cancelled_by' => $cancelledBy,
+                'cancelled_by' => $cancelledBy?->id,
                 'reason' => $reason,
             ]);
         } catch (\Exception $e) {

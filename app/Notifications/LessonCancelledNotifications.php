@@ -18,9 +18,8 @@ class LessonCancelledNotifications extends Notification implements ShouldQueue
      */
     public function __construct(
         public Lesson $lesson,
-        public ?User $cancelledBy,
-        public ?string $reason,
-        public bool $isSystemCancellation = false
+        public ?User $cancelledBy = null,
+        public ?string $reason = null,
     )
     {
         $this->onQueue('high');
@@ -45,17 +44,16 @@ class LessonCancelledNotifications extends Notification implements ShouldQueue
         $lesson = $this->lesson;
         $message = (new MailMessage)->subject('Lesson Cancelled');
 
-        if ($this->isSystemCancellation) {
-            $message->line('A lesson has been automatically cancelled bu the system.')
-                ->line('Reason: ' . $this->reason);
+        if ($this->cancelledBy === null || $this->cancelledBy->id === 0) {
+            $cancelledByName = 'System';
+            $message->line('A lesson has been automatically cancelled by the system.');
         } else {
-            $cancelledByName = $this->cancelledBy ? $this->cancelledBy->name : 'Unknown';
-
+            $cancelledByName = $this->cancelledBy->name;
             $message->line("A lesson has been cancelled by {$cancelledByName}.");
+        }
 
-            if ($this->reason) {
-                $message->line("Reason: {$this->reason}");
-            }
+        if ($this->reason) {
+            $message->line("Reason: {$this->reason}");
         }
 
         $message->line("Date: {$lesson->start_time->format('F j, Y')}")
@@ -73,11 +71,9 @@ class LessonCancelledNotifications extends Notification implements ShouldQueue
 
     public function toDatabase(object $notifiable): array
     {
-        if ($this->isSystemCancellation) {
-            $cancelledByName = 'System';
-        } else {
-            $cancelledByName = $this->cancelledBy ? $this->cancelledBy->name : 'Unknown';
-        }
+        $cancelledByName = $this->cancelledBy ? $this->cancelledBy->name : 'System';
+
+        $isSystemCancellation = $this->cancelledBy === null || $this->cancelledBy->id === 0;
 
         return [
             'lesson_id' => $this->lesson->id,
@@ -86,7 +82,7 @@ class LessonCancelledNotifications extends Notification implements ShouldQueue
             'message' => "Lesson on {$this->lesson->start_time->format('M j, H:i')} cancelled by {$cancelledByName}",
             'reason' => $this->reason,
             'cancelled_by' => $this->cancelledBy?->id,
-            'is_system_cancellation' => $this->isSystemCancellation,
+            'is_system_cancellation' => $isSystemCancellation,
             'start_time' => $this->lesson->start_time->toISOString(),
         ];
     }

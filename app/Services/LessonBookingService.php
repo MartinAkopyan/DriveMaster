@@ -176,6 +176,11 @@ class LessonBookingService
         );
     }
 
+    public function getExpiredPendingLessons(Carbon $olderThan): Collection
+    {
+        return $this->lessonRepo->getExpiredPendingLessons($olderThan);
+    }
+
     /**
      * @throws LessonBookingException
      */

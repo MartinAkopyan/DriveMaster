@@ -16,8 +16,8 @@ class SendLessonReminders implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 1;
-    public int $timeout = 300;
+    public $tries = 1;
+    public $timeout = 300;
 
     /**
      * Execute the job.

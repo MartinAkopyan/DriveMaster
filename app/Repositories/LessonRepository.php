@@ -147,6 +147,7 @@ class LessonRepository
             ->where('created_at', '<', $olderThan)
             ->where('start_time', '>', now())
             ->with(['instructor', 'student'])
+            ->limit(100)
             ->get();
     }
 

@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Enums\UserRole;
+use App\Models\Lesson;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -101,6 +103,17 @@ class UserRepository
                 ->where('role', UserRole::INSTRUCTOR)
                 ->count(),
         ];
+    }
+
+    public function getTopInstructors(Carbon $dateFrom, Carbon $dateTo): Collection
+    {
+        return Lesson::whereBetween('start_time', [$dateFrom, $dateTo])
+            ->selectRaw('instructor_id, COUNT(*) as lesson_count')
+            ->groupBy('instructor_id')
+            ->orderByDesc('lesson_count')
+            ->limit(10)
+            ->with('instructor')
+            ->get();
     }
 
     public function restoreInstructor(int $instructorId): User

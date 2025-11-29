@@ -92,15 +92,6 @@ class InstructorService
         return $this->userRepo->getPendingInstructors();
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function getInstructorsStats(User $admin): array
-    {
-        $this->ensureIsAdmin($admin);
-
-        return $this->userRepo->getInstructorStats();
-    }
 
     /**
      * @throws InstructorApprovalException

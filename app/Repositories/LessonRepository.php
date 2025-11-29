@@ -151,6 +151,16 @@ class LessonRepository
             ->get();
     }
 
+    public function getLessonsStats(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        return [
+            'total' => Lesson::whereBetween('start_time', [$dateFrom, $dateTo])->count(),
+            'confirmed' => Lesson::where('status', LessonStatus::CONFIRMED)
+                ->wehereBetween('start_time', [$dateFrom, $dateTo])->count(),
+            'cancelled' => Lesson::where('status', LessonStatus::CANCELLED)
+                ->whereBetween('start_time', [$dateFrom, $dateTo])->count(),
+        ];
+    }
 
     private function invalidateInstructorCache(int $instructorId): void
     {

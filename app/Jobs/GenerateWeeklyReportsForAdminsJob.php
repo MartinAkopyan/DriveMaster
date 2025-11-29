@@ -11,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class GenerateWeeklyReportsForAdmins implements ShouldQueue
+class GenerateWeeklyReportsForAdminsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,7 +31,7 @@ class GenerateWeeklyReportsForAdmins implements ShouldQueue
         $dispatchedCount = 0;
 
         foreach ($admins as $admin) {
-            GenerateAdminReport::dispatch(
+            GenerateAdminReportJob::dispatch(
                 adminId: $admin->id,
                 reportType: 'weekly',
                 dateFrom: $dateFrom,

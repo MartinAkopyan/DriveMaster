@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\LessonStatus;
+use App\Models\Lesson;
 use App\Notifications\LessonReminderNotifications;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;

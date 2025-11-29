@@ -108,9 +108,9 @@ class UserRepository
     public function getTopInstructors(Carbon $dateFrom, Carbon $dateTo): Collection
     {
         return Lesson::whereBetween('start_time', [$dateFrom, $dateTo])
-            ->selectRaw('instructor_id, COUNT(*) as lesson_count')
+            ->selectRaw('instructor_id, COUNT(*) as lessons_count')
             ->groupBy('instructor_id')
-            ->orderByDesc('lesson_count')
+            ->orderByDesc('lessons_count')
             ->limit(10)
             ->with('instructor')
             ->get();

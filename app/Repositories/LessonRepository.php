@@ -159,6 +159,8 @@ class LessonRepository
                 ->whereBetween('start_time', [$dateFrom, $dateTo])->count(),
             'cancelled' => Lesson::where('status', LessonStatus::CANCELLED)
                 ->whereBetween('start_time', [$dateFrom, $dateTo])->count(),
+            'completed' => Lesson::where('status', LessonStatus::COMPLETED)
+                ->whereBetween('start_time', [$dateFrom, $dateTo])->count()
         ];
     }
 

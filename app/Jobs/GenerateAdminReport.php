@@ -2,11 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Enums\LessonStatus;
-use App\Models\Lesson;
 use App\Models\User;
 use App\Notifications\AdminReportGeneratedNotification;
-use App\Services\InstructorService;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -80,6 +77,7 @@ class GenerateAdminReport implements ShouldQueue
             'total_lessons' => $lessonStats['total'],
             'confirmed_lessons' => $lessonStats['confirmed'],
             'cancelled_lessons' => $lessonStats['cancelled'],
+            'completed_lessons' => $lessonStats['completed'],
             'top_instructors' => $reportService->getTopInstructors($dateFrom, $dateTo, $admin),
             'instructor_stats' => $reportService->getInstructorsStats($admin)
         ];

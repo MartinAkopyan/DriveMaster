@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use App\Events\InstructorApproved;
+use App\Events\InstructorRegistered;
 use App\Events\InstructorRejected;
 use App\Events\LessonCancelled;
 use App\Events\LessonCancelledBySystem;
 use App\Events\LessonConfirmed;
 use App\Events\LessonCreated;
+use App\Events\StudentRegistered;
 use App\Listeners\InvalidateInstructorCache;
 use App\Listeners\SendInstructorApprovalNotifications;
 use App\Listeners\SendInstructorRejectionNotifications;
@@ -15,6 +17,7 @@ use App\Listeners\SendLessonCancellationNotifications;
 use App\Listeners\SendLessonConfirmationNotifications;
 use App\Listeners\SendLessonCreationNotifications;
 use App\Listeners\SendSystemLessonCancellationNotifications;
+use App\Listeners\SendWelcomeEmail;
 use App\Listeners\UpdateLessonCache;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -55,6 +58,12 @@ class EventServiceProvider extends ServiceProvider
         LessonCancelledBySystem::class => [
             SendSystemLessonCancellationNotifications::class,
             UpdateLessonCache::class
+        ],
+        InstructorRegistered::class => [
+            SendWelcomeEmail::class
+        ],
+        StudentRegistered::class => [
+            SendWelcomeEmail::class
         ]
     ];
 

@@ -62,8 +62,9 @@ class UserRegistrationService
                 'email' => $user->email,
             ]);
 
-            event(new InstructorRegistered($user, $token));
-
+            DB::afterCommit(function () use ($user, $token) {
+                event(new InstructorRegistered($user, $token));
+            });
 
             return [
                 'user' => $user,

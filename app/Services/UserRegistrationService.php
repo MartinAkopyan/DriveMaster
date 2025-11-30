@@ -19,6 +19,7 @@ class UserRegistrationService
             'name' => $userData['name'],
             'email' => $userData['email'],
             'password' => Hash::make($userData['password']),
+            'role' => UserRole::STUDENT,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

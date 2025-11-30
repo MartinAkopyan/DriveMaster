@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
             'role' => UserRole::STUDENT,
-            'is_active' => false,
+            'is_approved' => false,
             'remember_token' => Str::random(10),
         ];
     }

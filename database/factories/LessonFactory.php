@@ -25,7 +25,7 @@ class LessonFactory extends Factory
         return [
             'instructor_id' => User::factory()->create([
                 'role' => UserRole::INSTRUCTOR,
-                'is_active' => true
+                'is_approved' => true
             ]),
             'student_id' => User::factory()->create([
                 'role' => UserRole::STUDENT,

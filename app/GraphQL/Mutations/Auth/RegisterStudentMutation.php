@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\GraphQL\Mutations\Auth;
 
-use App\Models\User;
 use App\Services\UserRegistrationService;
 use Closure;
+use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Facades\Hash;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Support\Mutation;
 use Rebing\GraphQL\Support\SelectFields;
@@ -20,6 +19,10 @@ class RegisterStudentMutation extends Mutation
         'name' => 'registerStudent',
         'description' => 'A mutation for registering a student.'
     ];
+
+    public function __construct(
+        private UserRegistrationService $registrationService,
+    ){}
 
     public function type(): Type
     {
@@ -57,11 +60,14 @@ class RegisterStudentMutation extends Mutation
         ];
     }
 
-    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields)
+    /**
+     * @throws Error
+     */
+    public function resolve($root, array $args, $context, ResolveInfo $resolveInfo, Closure $getSelectFields): array
     {
 
         try {
-            return UserRegistrationService::registerStudent($args);
+            return $this->registrationService->registerStudent($args);
         } catch(\Exception $e) {
             throw new \GraphQL\Error\Error('Registration failed: '.$e->getMessage());
         }

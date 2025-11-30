@@ -19,7 +19,7 @@ class StudentRegistered
      * Create a new event instance.
      */
     public function __construct(
-        public User $student,
+        public User $user,
         public string $token
     ){}
 

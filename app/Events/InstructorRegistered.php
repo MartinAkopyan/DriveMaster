@@ -19,7 +19,7 @@ class InstructorRegistered
      * Create a new event instance.
      */
     public function __construct(
-        public User $instructor,
+        public User $user,
         public string $token
     ){}
 

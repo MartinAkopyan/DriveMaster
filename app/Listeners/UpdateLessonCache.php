@@ -25,7 +25,8 @@ class UpdateLessonCache
     private function invalidateLessonCache($lesson): void
     {
         try {
-            Cache::tags(['lessons'])->flush();
+            Cache::tags(["lessons:instructor:{$lesson->instructor_id}"])->flush();
+            Cache::tags(["lessons:student:{$lesson->student_id}"])->flush();
 
             Log::debug('Lesson cache invalidated', [
                 'lesson' => $lesson->id,

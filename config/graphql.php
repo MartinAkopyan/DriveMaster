@@ -92,6 +92,7 @@ return [
                 \App\GraphQL\Mutations\BookLesson::class,
                 \App\GraphQL\Mutations\ConfirmLesson::class,
                 \App\GraphQL\Mutations\CancelLesson::class,
+                \App\GraphQL\Mutations\GenerateReport::class,
             ],
             // The types only available in this schema
             'types' => [
@@ -102,6 +103,7 @@ return [
                 \App\GraphQL\Types\LessonType::class,
                 \App\GraphQL\Types\AuthPayloadType::class,
                 \App\GraphQL\Types\SlotType::class,
+                \App\GraphQL\Types\ReportResponseType::class,
             ],
 
             // Laravel HTTP middleware

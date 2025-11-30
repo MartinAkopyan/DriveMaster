@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Events\InstructorRegistered;
+use App\Events\StudentRegistered;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserRegistrationService
 {
-    public static function registerStudent(array $userData): array
+    public function registerStudent(array $userData): array
     {
         $user = User::create([
             'name' => $userData['name'],
@@ -18,13 +21,23 @@ class UserRegistrationService
             'password' => Hash::make($userData['password']),
         ]);
 
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        Log::info('Student registered', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
+
+        event(new StudentRegistered($user, $token));
+
+
         return [
             'user' => $user,
-            'token' => $user->createToken('auth_token')->plainTextToken,
+            'token' => $token
         ];
     }
 
-    public static function registerInstructor(array $userData): array
+    public function registerInstructor(array $userData): array
     {
         return DB::transaction(function () use ($userData) {
             $user = User::create([
@@ -42,9 +55,19 @@ class UserRegistrationService
                 'car_model' => $userData['car_model'] ?? null,
             ]);
 
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            Log::info('Instructor registered', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
+            event(new InstructorRegistered($user, $token));
+
+
             return [
                 'user' => $user,
-                'token' => $user->createToken('auth_token')->plainTextToken,
+                'token' => $token,
             ];
         });
     }

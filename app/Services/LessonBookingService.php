@@ -60,7 +60,8 @@ class LessonBookingService
                     'student_id' => $student->id,
                     'start_time' => $startTime,
                     'end_time' => $endTime,
-                    'notes' => $notes
+                    'notes' => $notes,
+                    'status' => LessonStatus::PLANNED
                 ]);
 
                 event(new LessonCreated($lesson));

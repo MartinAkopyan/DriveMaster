@@ -28,7 +28,7 @@ class UserRegistrationService
             'email' => $user->email,
         ]);
 
-        event(new StudentRegistered($user, $token));
+        event(new StudentRegistered($user));
 
 
         return [
@@ -62,8 +62,8 @@ class UserRegistrationService
                 'email' => $user->email,
             ]);
 
-            DB::afterCommit(function () use ($user, $token) {
-                event(new InstructorRegistered($user, $token));
+            DB::afterCommit(function () use ($user) {
+                event(new InstructorRegistered($user));
             });
 
             return [

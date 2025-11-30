@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\UnauthorizedReportAccessException;
+use App\Jobs\GenerateAdminReportJob;
 use App\Models\User;
 use App\Repositories\LessonRepository;
 use App\Repositories\UserRepository;
@@ -44,6 +45,21 @@ class ReportService
         $this->ensureIsAdmin($admin);
 
         return $this->lessonRepo->getLessonsStats($dateFrom, $dateTo);
+    }
+
+    /**
+     * @throws UnauthorizedReportAccessException
+     */
+    public function generateAdminReport(User $admin, string $reportType, string $dateFrom, string $dateTo): void
+    {
+        $this->ensureIsAdmin($admin);
+
+        GenerateAdminReportJob::dispatch(
+            adminId: $admin->id,
+            reportType: $reportType,
+            dateFrom: $dateFrom,
+            dateTo: $dateTo
+        );
     }
 
     /**

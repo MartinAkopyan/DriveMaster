@@ -76,7 +76,7 @@ class ApproveInstructorTest extends TestCase
     }
 
     /** @test */
-    public function instructor_cannot_approve_instructor():void
+    public function instructor_cannot_approve_instructor(): void
     {
         $anotherInstructor = User::factory()->create([
             'role' => UserRole::INSTRUCTOR,
@@ -109,4 +109,45 @@ class ApproveInstructorTest extends TestCase
         ]);
     }
 
+    /** @test */
+    public function cannot_approve_non_instructor(): void
+    {
+        $student = User::factory()->create([
+            'role' => UserRole::STUDENT
+        ]);
+
+        $query2 = "mutation {
+                            approveInstructor(instructor_id: {$student->id}) {
+                                    id
+                                    is_approved
+                                }
+                            }";
+
+        $response = $this->actingAs($this->admin, 'sanctum')
+            ->postJson('/graphql', ['query' => $query2]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'Instructor not found');
+        $this->assertDatabaseHas('users', [
+            'id' => $student->id,
+            'is_approved' => false
+        ]);
+    }
+
+    /** @test */
+    public function cannot_approve_nonexistent_instructor(): void
+    {
+        $query2 = "mutation {
+                            approveInstructor(instructor_id: 9999) {
+                                    id
+                                    is_approved
+                                }
+                            }";
+
+        $response = $this->actingAs($this->admin, 'sanctum')
+            ->postJson('/graphql', ['query' => $query2]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'Instructor not found');
+    }
 }

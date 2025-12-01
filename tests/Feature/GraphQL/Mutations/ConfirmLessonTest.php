@@ -1,6 +1,7 @@
 <?php
 
-namespace Tests\Feature\GraphQl\Mutations;
+namespace Tests\Feature\GraphQL\Mutations;
+
 
 use App\Enums\LessonStatus;
 use App\Enums\UserRole;
@@ -93,7 +94,5 @@ class ConfirmLessonTest extends TestCase
             'id' => $lesson->id,
             'status' => LessonStatus::PLANNED
         ]);
-
-
     }
 }

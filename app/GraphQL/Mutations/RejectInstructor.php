@@ -35,6 +35,9 @@ class RejectInstructor extends Mutation
         return [
             'instructor_id' => [
                 'type' => Type::nonNull(Type::int()),
+            ],
+            'reason' => [
+                'type' => Type::string(),
             ]
         ];
     }
@@ -46,7 +49,7 @@ class RejectInstructor extends Mutation
     {
         $admin = auth()->user();
 
-        return $this->instructorService->rejectInstructor($args['instructor_id'], $admin);
+        return $this->instructorService->rejectInstructor($args['instructor_id'], $admin, $args['reason'] ?? null);
 
     }
 }

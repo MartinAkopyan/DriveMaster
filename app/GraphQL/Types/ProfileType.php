@@ -46,6 +46,10 @@ class ProfileType extends GraphQLType
                 'type' => Type::string(),
                 'description' => 'The car model of the instructor'
             ],
+            'rejection_reason' => [
+                'type' => Type::string(),
+                'description' => 'The rejection reason for the instructor'
+            ],
             'user' => [
                 'type' => Type::nonNull(GraphQL::type('User')),
                 'description' => 'The user data of the instructor',

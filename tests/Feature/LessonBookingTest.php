@@ -141,4 +141,33 @@ class LessonBookingTest extends TestCase
         $response->assertJsonPath('errors.0.message', 'Invalid slot number. Must be between 1 and 6');
         $this->assertDatabaseCount('lessons', 0);
     }
+
+    /** @test */
+    public function cannot_double_book_same_slot(): void
+    {
+        $query = "
+            mutation {
+                bookLesson(
+                    instructor_id: {$this->instructor->id},
+                    date: \"{$this->date}\",
+                    slot: 1
+                ) {
+                    id
+                }
+            }";
+
+        $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $otherStudent = User::factory()->create([
+            'role' => UserRole::STUDENT,
+        ]);
+
+        $response = $this->actingAs($otherStudent, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'This time slot is already booked');
+        $this->assertDatabaseCount('lessons', 1);
+    }
 }

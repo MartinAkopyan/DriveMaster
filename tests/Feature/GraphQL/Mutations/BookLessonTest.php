@@ -1,16 +1,15 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\GraphQL\Mutations;
 
 use App\Enums\LessonStatus;
 use App\Enums\UserRole;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class LessonBookingTest extends TestCase
+class BookLessonTest extends TestCase
 {
     use RefreshDatabase;
 

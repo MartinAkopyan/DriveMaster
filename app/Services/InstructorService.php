@@ -99,7 +99,7 @@ class InstructorService
     private function ensureIsAdmin(User $admin): void
     {
         if (!$admin->isAdmin()) {
-            throw new InstructorApprovalException('Only admins can view this data');
+            throw new InstructorApprovalException('Only admins can perform this action');
         }
     }
 }

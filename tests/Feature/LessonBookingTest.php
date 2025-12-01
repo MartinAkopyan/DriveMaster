@@ -16,6 +16,7 @@ class LessonBookingTest extends TestCase
 
     private User $student;
     private User $instructor;
+    private String $date;
 
     protected function setUp(): void
     {
@@ -30,18 +31,19 @@ class LessonBookingTest extends TestCase
         ]);
 
         Profile::factory()->create(['user_id' => $this->instructor->id]);
+
+        $this->date = now()->addDays(5)->format('Y-m-d');
     }
 
     /** @test */
     public function student_can_book_lesson_test(): void
     {
-        $date = now()->addDays(5)->format('Y-m-d');
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', [
                 'query' => "mutation {
                     bookLesson(
                         instructor_id: {$this->instructor->id},
-                        date: \"{$date}\",
+                        date: \"{$this->date}\",
                         slot: 1
                     ) {
                         id,
@@ -70,7 +72,7 @@ class LessonBookingTest extends TestCase
         mutation {
             bookLesson(
                 instructor_id: {$this->instructor->id},
-                date: \"{$date}\",
+                date: \"{$this->date}\",
                 slot: 1
             ) {
                 id
@@ -100,7 +102,7 @@ class LessonBookingTest extends TestCase
             mutation{
                 bookLesson(
                     instructor_id: {$unApprovedInstructor->id},
-                    date: \"{$date}\",
+                    date: \"{$this->date}\",
                     slot: 1
                 ) {
                     id
@@ -115,6 +117,28 @@ class LessonBookingTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('errors.0.message', 'Instructor not found or not approved');
+        $this->assertDatabaseCount('lessons', 0);
+    }
+
+    /** @test */
+    public function cannot_book_invalid_slot(): void
+    {
+        $query = "
+            mutation {
+                bookLesson(
+                    instructor_id: {$this->instructor->id},
+                    date: \"{$this->date}\",
+                    slot: 10
+                ) {
+                    id
+                }
+            }";
+
+        $response = $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'Invalid slot number. Must be between 1 and 6');
         $this->assertDatabaseCount('lessons', 0);
     }
 }

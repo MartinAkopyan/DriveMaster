@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -26,9 +27,31 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => Hash::make('password'),
+            'role' => UserRole::STUDENT,
+            'is_approved' => false,
             'remember_token' => Str::random(10),
         ];
+    }
+
+    public function student(): static
+    {
+        return $this->state(['role' => UserRole::STUDENT]);
+    }
+
+    public function instructor(): static
+    {
+        return $this->state(['role' => UserRole::INSTRUCTOR]);
+    }
+
+    public function admin(): static
+    {
+        return $this->state(['role' => UserRole::ADMIN]);
+    }
+
+    public function approved(): static
+    {
+        return $this->state(['is_approved' => true]);
     }
 
     /**

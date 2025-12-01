@@ -60,6 +60,6 @@ class BookLesson extends Mutation
     {
         $student = auth()->user();
 
-        return $this->lessonService->bookLesson($student, $args['instructor_id'], $args['date'], $args['slot'], $args['notes']);
+        return $this->lessonService->bookLesson($student, $args['instructor_id'], $args['date'], $args['slot'], $args['notes'] ?? null);
     }
 }

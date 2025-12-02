@@ -51,7 +51,6 @@ class RejectInstructorTest extends TestCase
         $response = $this->actingAs($this->admin, 'sanctum')
             ->postJson('/graphql', ['query' => $this->query]);
 
-        \Log::info($response->json());
         $response->assertOk();
         $response->assertJsonPath('data.rejectInstructor.id', $this->instructor->id);
         $response->assertJsonPath('data.rejectInstructor.profile.rejection_reason', 'Insufficient experience');

@@ -57,7 +57,7 @@ class CancelLessonTest extends TestCase
 
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson("/graphql", ['query' => $query]);
-        \Log::info($response->json());
+
         $response->assertOk();
         $response->assertJsonPath('data.cancelLesson.status', 'CANCELLED');
         $response->assertJsonPath('data.cancelLesson.cancel_reason', 'Personal reasons');

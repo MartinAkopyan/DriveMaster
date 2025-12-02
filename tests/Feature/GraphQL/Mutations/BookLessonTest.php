@@ -112,8 +112,6 @@ class BookLessonTest extends TestCase
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
 
-        \Log::info($response->json());
-
         $response->assertOk();
         $response->assertJsonPath('errors.0.message', 'Instructor not found or not approved');
         $this->assertDatabaseCount('lessons', 0);

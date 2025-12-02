@@ -144,4 +144,32 @@ class RejectInstructorTest extends TestCase
             'deleted_at' => null,
         ]);
     }
+
+    /** @test */
+    public function guest_cannot_approve_instructor(): void
+    {
+        $response = $this->postJson('/graphql', [
+            'query' => "mutation {
+                approveInstructor(instructor_id: {$this->instructor->id}) {
+                    id
+                }
+            }"
+        ]);
+
+        $response->assertJsonPath('message', 'Unauthenticated.');
+    }
+
+    /** @test */
+    public function guest_cannot_reject_instructor(): void
+    {
+        $response = $this->postJson('/graphql', [
+            'query' => "mutation {
+                rejectInstructor(instructor_id: {$this->instructor->id}, reason: \"Test\") {
+                    id
+                }
+            }"
+        ]);
+
+        $response->assertJsonPath('message', 'Unauthenticated.');
+    }
 }

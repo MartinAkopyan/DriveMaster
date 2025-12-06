@@ -44,8 +44,6 @@ class AvailableSlotsTest extends TestCase
         $response->assertOk();
         $this->assertCount(6,$response->json('data.availableSlots'));
 
-        \Log::info($response->json());
-
         $response->assertJsonStructure([
             'data' => [
                 'availableSlots' => [
@@ -53,6 +51,10 @@ class AvailableSlotsTest extends TestCase
                 ]
             ]
         ]);
+
+        $firstSlot = $response->json('data.availableSlots.0');
+        $this->assertStringContainsString('08:00:00', $firstSlot['start_time']);
+        $this->assertStringContainsString('10:00:00', $firstSlot['end_time']);
     }
 
     private function buildQuery(int $instructorId, string $date): string

@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Models\Lesson;
 use App\Models\Profile;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -157,6 +158,44 @@ class AvailableSlotsTest extends TestCase
 
         $response->assertUnauthorized();
         $response->assertJsonPath('message', 'Unauthenticated.');
+    }
+
+    /** @test */
+    public function slots_are_exactly_2_hours(): void
+    {
+        $query = $this->buildQuery($this->instructor->id, $this->date);
+
+        $response = $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $slots = $response->json('data.availableSlots');
+
+        foreach ($slots as $slot) {
+            $start = Carbon::parse($slot['start_time']);
+            $end = Carbon::parse($slot['end_time']);
+
+            $this->assertEquals(2, $start->diffInHours($end));
+        }
+    }
+
+    /** @test */
+    public function slots_do_not_overlap(): void
+    {
+        $query = $this->buildQuery($this->instructor->id, $this->date);
+
+        $response = $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $slots = $response->json('data.availableSlots');
+
+        for ($i = 0; $i < count($slots) - 1; $i++) {
+            $currentEnd = Carbon::parse($slots[$i]['end_time']);
+            $nextStart = Carbon::parse($slots[$i+1]['start_time']);
+
+            $this->assertTrue($currentEnd->lessThanOrEqualTo($nextStart));
+        }
     }
 
     private function buildQuery(int $instructorId, string $date): string

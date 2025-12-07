@@ -117,6 +117,48 @@ class AvailableSlotsTest extends TestCase
 
     }
 
+    /** @test */
+    public function throws_exception_for_unapproved_instructor(): void
+    {
+        $unapprovedInstructor = User::factory()->create([
+            'role' => UserRole::INSTRUCTOR,
+            'is_approved' => false
+        ]);
+
+        Profile::factory()->create(['user_id' => $unapprovedInstructor->id]);
+
+        $query = $this->buildQuery($unapprovedInstructor->id, $this->date);
+
+        $response = $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'Instructor not found or not approved');
+    }
+
+    /** @test */
+    public function throw_exception_on_nonexistent_instructor(): void
+    {
+        $query = $this->buildQuery(999999, $this->date);
+
+        $response = $this->actingAs($this->student, 'sanctum')
+            ->postJson('/graphql', ['query' => $query]);
+
+        $response->assertOk();
+        $response->assertJsonPath('errors.0.message', 'Instructor not found or not approved');
+    }
+
+    /** @test */
+    public function guest_cannot_view_available_slots(): void
+    {
+        $query = $this->buildQuery($this->instructor->id, $this->date);
+
+        $response = $this->postJson('/graphql', ['query' => $query]);
+
+        $response->assertUnauthorized();
+        $response->assertJsonPath('message', 'Unauthenticated.');
+    }
+
     private function buildQuery(int $instructorId, string $date): string
     {
         return "

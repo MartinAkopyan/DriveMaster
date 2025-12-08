@@ -55,15 +55,4 @@ class Lesson extends Model
         return $this->belongsTo(User::class, 'student_id');
     }
 
-    public function canBeCancelled(): bool
-    {
-        return $this->status === LessonStatus::PLANNED &&
-            $this->start_time > now()->addHours(24);
-    }
-
-    public function getDurationAttribute(): int
-    {
-        return $this->end_time->diffInMinutes($this->start_time);
-    }
-
 }

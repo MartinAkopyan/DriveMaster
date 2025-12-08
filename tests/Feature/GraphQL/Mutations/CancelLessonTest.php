@@ -3,9 +3,7 @@
 namespace Tests\Feature\GraphQL\Mutations;
 
 use App\Enums\LessonStatus;
-use App\Enums\UserRole;
 use App\Models\Lesson;
-use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -22,16 +20,14 @@ class CancelLessonTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->student = User::factory()->create([
-            'role' => UserRole::STUDENT
-        ]);
+        $this->student = User::factory()
+            ->student()
+            ->create();
 
-        $this->instructor = User::factory()->create([
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => true
-        ]);
-
-        Profile::factory()->create(['user_id' => $this->instructor->id]);
+        $this->instructor = User::factory()
+            ->instructor()
+            ->approved()
+            ->create();
 
         $this->date = now()->addDays(5)->format('Y-m-d');
     }
@@ -47,19 +43,13 @@ class CancelLessonTest extends TestCase
             'end_time' => now()->addHours(26),
         ]);
 
-        $query = "mutation {
-                    cancelLesson(lesson_id: {$lesson->id}, reason: \"Personal reasons\") {
-                        id
-                        status
-                        cancel_reason
-                    }
-                }";
+        $query = $this->buildMutation($lesson, 'Personal reasons');
 
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson("/graphql", ['query' => $query]);
 
         $response->assertOk();
-        $response->assertJsonPath('data.cancelLesson.status', 'CANCELLED');
+        $response->assertJsonPath('data.cancelLesson.status', 'cancelled');
         $response->assertJsonPath('data.cancelLesson.cancel_reason', 'Personal reasons');
         $this->assertDatabaseHas('lessons', [
             'id' => $lesson->id,
@@ -78,11 +68,7 @@ class CancelLessonTest extends TestCase
             'end_time' => now()->addHours(8),
         ]);
 
-        $query = "mutation {
-                    cancelLesson(lesson_id: {$lesson->id}) {
-                        id
-                    }
-                }";
+        $query = $this->buildMutation($lesson);
 
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
@@ -106,24 +92,29 @@ class CancelLessonTest extends TestCase
             'end_time' => now()->addHours(4),
         ]);
 
-        $query = "mutation {
-                    cancelLesson(lesson_id: {$lesson->id}, reason: \"Emergency\") {
-                        id
-                        status
-                        cancel_reason
-                    }
-                }";
+        $query = $this->buildMutation($lesson);
 
         $response = $this->actingAs($this->instructor, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
 
         $response->assertOk();
 
-        $response->assertJsonPath('data.cancelLesson.status', 'CANCELLED');
+        $response->assertJsonPath('data.cancelLesson.status', 'cancelled');
         $response->assertJsonPath('data.cancelLesson.cancel_reason', 'Emergency');
         $this->assertDatabaseHas('lessons', [
             'id' => $lesson->id,
             'status' => LessonStatus::CANCELLED
         ]);
+    }
+
+    private function buildMutation(Lesson $lesson, string $reason = 'Emergency'): string
+    {
+        return "mutation {
+                    cancelLesson(lesson_id: {$lesson->id}, reason: \"{$reason}\") {
+                        id
+                        status
+                        cancel_reason
+                    }
+                }";
     }
 }

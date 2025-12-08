@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\UserRole;
+use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -41,7 +43,13 @@ class UserFactory extends Factory
 
     public function instructor(): static
     {
-        return $this->state(['role' => UserRole::INSTRUCTOR]);
+        return $this->state(function (array $attributes) {
+            return [
+                'role' => UserRole::INSTRUCTOR,
+            ];
+        })->afterCreating(function (User $user) {
+            Profile::factory()->create(['user_id' => $user->id]);
+        });
     }
 
     public function admin(): static

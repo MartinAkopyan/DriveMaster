@@ -27,6 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read Profile|null $profile
  * @property-read Collection|Lesson[] $lessonsAsInstructor
  * @property-read Collection|Lesson[] $lessonsAsStudent
+ * @method static \Database\Factories\UserFactory factory(...$parameters)
  */
 
 class User extends Authenticatable

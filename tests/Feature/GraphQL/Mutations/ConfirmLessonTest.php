@@ -23,16 +23,14 @@ class ConfirmLessonTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->student = User::factory()->create([
-            'role' => UserRole::STUDENT
-        ]);
+        $this->student = User::factory()
+            ->student()
+            ->create();
 
-        $this->instructor = User::factory()->create([
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => true
-        ]);
-
-        Profile::factory()->create(['user_id' => $this->instructor->id]);
+        $this->instructor = User::factory()
+            ->instructor()
+            ->approved()
+            ->create();
 
         $this->date = now()->addDays(5)->format('Y-m-d');
     }
@@ -46,18 +44,13 @@ class ConfirmLessonTest extends TestCase
             'status' => LessonStatus::PLANNED
         ]);
 
-        $query = "mutation {
-                    confirmLesson(lesson_id: {$lesson->id}) {
-                        id
-                        status
-                    }
-                }";
+        $query = $this->buildMutation($lesson);
 
         $response = $this->actingAs($this->instructor, 'sanctum')
             ->postJson("/graphql", ['query' => $query]);
 
         $response->assertOk();
-        $response->assertJsonPath('data.confirmLesson.status', 'CONFIRMED');
+        $response->assertJsonPath('data.confirmLesson.status', 'confirmed');
         $this->assertDatabaseHas('lessons', [
             'id' => $lesson->id,
             'status' => LessonStatus::CONFIRMED
@@ -67,10 +60,10 @@ class ConfirmLessonTest extends TestCase
     /** @test */
     public function instructor_cannot_confirm_other_lessons(): void
     {
-        $otherInstructor = User::factory()->create([
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => true
-        ]);
+        $otherInstructor = User::factory()
+            ->instructor()
+            ->approved()
+            ->create();
 
         $lesson = Lesson::factory()->create([
             'instructor_id' => $otherInstructor->id,
@@ -78,12 +71,7 @@ class ConfirmLessonTest extends TestCase
             'status' => LessonStatus::PLANNED
         ]);
 
-        $query = "mutation {
-                    confirmLesson(lesson_id: {$lesson->id}) {
-                        id
-                        status
-                    }
-                }";
+        $query = $this->buildMutation($lesson);
 
         $response = $this->actingAs($this->instructor, 'sanctum')
             ->postJson("/graphql", ['query' => $query]);
@@ -94,5 +82,15 @@ class ConfirmLessonTest extends TestCase
             'id' => $lesson->id,
             'status' => LessonStatus::PLANNED
         ]);
+    }
+
+    private function buildMutation(Lesson $lesson): string
+    {
+        return "mutation {
+                    confirmLesson(lesson_id: {$lesson->id}) {
+                        id
+                        status
+                    }
+                }";
     }
 }

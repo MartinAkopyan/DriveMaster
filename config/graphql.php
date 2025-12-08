@@ -107,7 +107,7 @@ return [
             ],
 
             // Laravel HTTP middleware
-            'middleware' => ['auth:sanctum'],
+            'middleware' => ['auth:sanctum', 'throttle:graphql'],
 
             // Which HTTP methods to support; must be given in UPPERCASE!
             'method' => ['GET', 'POST'],
@@ -135,7 +135,7 @@ return [
                 \App\GraphQL\Mutations\Auth\RegisterStudentMutation::class,
                 \App\GraphQL\Mutations\Auth\RegisterInstructorMutation::class
             ],
-            'middleware' => [],
+            'middleware' => ['throttle:graphql_auth'],
         ],
     ],
 

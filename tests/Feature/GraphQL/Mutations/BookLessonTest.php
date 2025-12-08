@@ -3,8 +3,6 @@
 namespace Tests\Feature\GraphQL\Mutations;
 
 use App\Enums\LessonStatus;
-use App\Enums\UserRole;
-use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,16 +18,14 @@ class BookLessonTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->student = User::factory()->create([
-            'role' => UserRole::STUDENT
-        ]);
+        $this->student = User::factory()
+            ->student()
+            ->create();
 
-        $this->instructor = User::factory()->create([
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => true
-        ]);
-
-        Profile::factory()->create(['user_id' => $this->instructor->id]);
+        $this->instructor = User::factory()
+            ->instructor()
+            ->approved()
+            ->create();
 
         $this->date = now()->addDays(5)->format('Y-m-d');
     }
@@ -37,23 +33,14 @@ class BookLessonTest extends TestCase
     /** @test */
     public function student_can_book_lesson_test(): void
     {
+        $query = $this->buildMutation($this->instructor, $this->date);
+
         $response = $this->actingAs($this->student, 'sanctum')
-            ->postJson('/graphql', [
-                'query' => "mutation {
-                    bookLesson(
-                        instructor_id: {$this->instructor->id},
-                        date: \"{$this->date}\",
-                        slot: 1
-                    ) {
-                        id,
-                        status
-                    }
-                }"
-            ]);
+            ->postJson('/graphql', ['query' => $query]);
 
 
         $response->assertOk();
-        $response->assertJsonPath('data.bookLesson.status', 'PLANNED');
+        $response->assertJsonPath('data.bookLesson.status', 'planned');
 
         $this->assertDatabaseHas('lessons', [
             'student_id' => $this->student->id,
@@ -67,16 +54,7 @@ class BookLessonTest extends TestCase
     {
         $date = now()->addDays(5)->format('Y-m-d');
 
-        $query = "
-        mutation {
-            bookLesson(
-                instructor_id: {$this->instructor->id},
-                date: \"{$this->date}\",
-                slot: 1
-            ) {
-                id
-            }
-        }";
+        $query = $this->buildMutation($this->instructor, $date);
 
         $response = $this->actingAs($this->instructor, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
@@ -90,24 +68,11 @@ class BookLessonTest extends TestCase
     /** @test */
     public function cannot_book_with_unapproved_instructor(): void
     {
-        $unApprovedInstructor = User::factory()->create([
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => false
-        ]);
+        $unApprovedInstructor = User::factory()
+            ->instructor()
+            ->create();
 
-        $date = now()->addDays(5)->format('Y-m-d');
-
-        $query = "
-            mutation{
-                bookLesson(
-                    instructor_id: {$unApprovedInstructor->id},
-                    date: \"{$this->date}\",
-                    slot: 1
-                ) {
-                    id
-                }
-            }
-        ";
+        $query = $this->buildMutation($unApprovedInstructor, $this->date );
 
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
@@ -120,16 +85,7 @@ class BookLessonTest extends TestCase
     /** @test */
     public function cannot_book_invalid_slot(): void
     {
-        $query = "
-            mutation {
-                bookLesson(
-                    instructor_id: {$this->instructor->id},
-                    date: \"{$this->date}\",
-                    slot: 10
-                ) {
-                    id
-                }
-            }";
+        $query = $this->buildMutation($this->instructor, $this->date, 10);
 
         $response = $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
@@ -142,23 +98,14 @@ class BookLessonTest extends TestCase
     /** @test */
     public function cannot_double_book_same_slot(): void
     {
-        $query = "
-            mutation {
-                bookLesson(
-                    instructor_id: {$this->instructor->id},
-                    date: \"{$this->date}\",
-                    slot: 1
-                ) {
-                    id
-                }
-            }";
+        $query = $this->buildMutation($this->instructor, $this->date);
 
         $this->actingAs($this->student, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
 
-        $otherStudent = User::factory()->create([
-            'role' => UserRole::STUDENT,
-        ]);
+        $otherStudent = User::factory()
+            ->student()
+            ->create();
 
         $response = $this->actingAs($otherStudent, 'sanctum')
             ->postJson('/graphql', ['query' => $query]);
@@ -166,5 +113,19 @@ class BookLessonTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('errors.0.message', 'This time slot is already booked');
         $this->assertDatabaseCount('lessons', 1);
+    }
+
+    private function buildMutation(User $instructor, string $date , int $slot = 1): string
+    {
+        return "mutation {
+                bookLesson(
+                    instructor_id: {$instructor->id},
+                    date: \"{$date}\",
+                    slot: {$slot}
+                ) {
+                    id
+                    status
+                }
+            }";
     }
 }

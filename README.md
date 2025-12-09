@@ -42,7 +42,7 @@ Production-ready Laravel + GraphQL application for managing driving school opera
 ### Design Patterns
 - **Repository Pattern** - Data access layer abstraction
 - **Service Layer** - Business logic encapsulation
-- **Observer Pattern** - Event-driven architecture
+- **Event-Listener Pattern** - Laravel Events with async processing
 
 ### Key Components
 ```
@@ -291,7 +291,7 @@ This project is licensed under the MIT License.
 
 **Martin Akopyan**
 - GitHub: [@martinakopyan](https://github.com/martinakopyan)
-- Email: martin@example.com
+- Email: martinakopyan34@gmail.com
 
 ---
 

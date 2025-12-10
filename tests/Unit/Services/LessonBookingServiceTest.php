@@ -2,15 +2,20 @@
 
 namespace Tests\Unit\Services;
 
+use App\Enums\LessonStatus;
 use App\Enums\UserRole;
+use App\Events\LessonCreated;
 use App\Exceptions\LessonBookingException;
+use App\Models\Lesson;
 use App\Models\User;
 use App\Repositories\LessonRepository;
 use App\Repositories\UserRepository;
 use App\Services\LessonBookingService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use Illuminate\Support\Facades\Event;
+use Tests\TestCase;
 
 class LessonBookingServiceTest extends TestCase
 {
@@ -28,16 +33,14 @@ class LessonBookingServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->student = new User([
-            'id' => 1,
-            'role' => UserRole::STUDENT,
-        ]);
+        $this->student = new User();
+        $this->student->setAttribute('id', 1);
+        $this->student->setAttribute('role', UserRole::STUDENT);
 
-        $this->instructor = new User([
-            'id' => 2,
-            'role' => UserRole::INSTRUCTOR,
-            'is_approved' => true
-        ]);
+        $this->instructor = new User();
+        $this->instructor->setAttribute('id', 2);
+        $this->instructor->setAttribute('role', UserRole::INSTRUCTOR);
+        $this->instructor->setAttribute('is_approved', true);
 
         $this->date = Carbon::tomorrow()->format('Y-m-d');
 
@@ -117,6 +120,80 @@ class LessonBookingServiceTest extends TestCase
         $this->expectExceptionMessage('Cannot book lessons in the past');
 
         $this->service->bookLesson($this->student, $this->instructorId, $invalidDate, $this->slot);
+    }
+
+    /** @test */
+    public function throws_exception_when_time_slot_already_booked(): void
+    {
+        $this->userRepository
+            ->shouldReceive('getApprovedInstructor')
+            ->with($this->instructorId)
+            ->once()
+            ->andReturn($this->instructor);
+
+        $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+        $lock->shouldReceive('block')
+            ->once()
+            ->andReturnUsing(function ($timeout, $callback) {
+                return $callback();
+            });
+
+        Cache::shouldReceive('lock')
+            ->once()
+            ->andReturn($lock);
+
+
+        $this->lessonRepository
+            ->shouldReceive('hasInstructorConflict')
+            ->once()
+            ->andReturn(true);
+
+        $this->expectException(LessonBookingException::class);
+        $this->expectExceptionMessage('This time slot is already booked');
+
+        $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
+    }
+
+    /** @test */
+    public function successfully_books_lesson_and_dispatches_event(): void
+    {
+        Event::fake();
+
+        $createdLesson = new Lesson([
+            'id' => 1,
+            'instructor_id' => $this->instructorId,
+            'student_id' => $this->student->id,
+            'start_time' => Carbon::parse($this->date)->setTime(8,0),
+            'end_time' => Carbon::parse($this->date)->setTime(10,0),
+            'status' => LessonStatus::PLANNED,
+        ]);
+
+        $this->userRepository
+            ->shouldReceive('getApprovedInstructor')
+            ->with($this->instructorId)
+            ->once()
+            ->andReturn($this->instructor);
+
+        $this->lessonRepository
+            ->shouldReceive('hasInstructorConflict')
+            ->once()
+            ->andReturn(false);
+
+        $this->lessonRepository
+            ->shouldReceive('createLesson')
+            ->once()
+            ->andReturn($createdLesson);
+
+        $result = $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
+
+        $this->assertInstanceOf(Lesson::class, $result);
+        $this->assertEquals(LessonStatus::PLANNED, $result->status);
+        $this->assertEquals($this->instructorId, $result->instructor_id);
+        $this->assertEquals($this->student->id, $result->student_id);
+
+        Event::assertDispatched(LessonCreated::class, function ($event) use ($createdLesson) {
+            return $event->lesson->id === $createdLesson->id;
+        });
     }
 
 }

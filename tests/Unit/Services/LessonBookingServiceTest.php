@@ -196,4 +196,46 @@ class LessonBookingServiceTest extends TestCase
         });
     }
 
+    /** @test */
+    public function uses_lock_to_prevent_race_conditions(): void
+    {
+        Event::fake();
+
+        $this->userRepository
+            ->shouldReceive('getApprovedInstructor')
+            ->once()
+            ->andReturn($this->instructor);
+
+        $this->lessonRepository
+            ->shouldReceive('hasInstructorConflict')
+            ->once()
+            ->andReturn(false);
+
+        $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+
+        $lock->shouldReceive('block')
+            ->once()
+            ->with(5, Mockery::type(\Closure::class))
+            ->andReturnUsing(fn ($_, $callback) => $callback());
+
+        Cache::shouldReceive('lock')
+            ->once()
+            ->with(Mockery::type('string'), 10)
+            ->andReturn($lock);
+
+        $this->lessonRepository
+            ->shouldReceive('createLesson')
+            ->once()
+            ->andReturn(new Lesson());
+
+        $result = $this->service->bookLesson(
+            $this->student,
+            $this->instructorId,
+            $this->date,
+            $this->slot
+        );
+
+        $this->assertInstanceOf(Lesson::class, $result);
+    }
+
 }

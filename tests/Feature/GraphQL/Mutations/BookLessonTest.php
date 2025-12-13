@@ -31,7 +31,7 @@ class BookLessonTest extends TestCase
     }
 
     /** @test */
-    public function student_can_book_lesson_test(): void
+    public function student_can_book_lesson(): void
     {
         $query = $this->buildMutation($this->instructor, $this->date);
 

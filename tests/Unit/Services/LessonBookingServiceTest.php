@@ -12,6 +12,7 @@ use App\Repositories\LessonRepository;
 use App\Repositories\UserRepository;
 use App\Services\LessonBookingService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Mockery;
 use Illuminate\Support\Facades\Event;
@@ -235,7 +236,7 @@ class LessonBookingServiceTest extends TestCase
     /** @test */
     public function throws_exception_when_distributed_lock_times_out(): void
     {
-        Event::fake();
+//        Event::fake();
 
         $this->userRepository
             ->shouldReceive('getApprovedInstructor')
@@ -244,15 +245,14 @@ class LessonBookingServiceTest extends TestCase
 
         $this->lessonRepository
             ->shouldReceive('hasInstructorConflict')
-            ->once()
-            ->andReturn(false);
+            ->never();
 
         $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
 
         $lock->shouldReceive('block')
             ->once()
             ->with(5, Mockery::type(\Closure::class))
-            ->andThrow(new LessonBookingException());
+            ->andThrow(new LockTimeoutException());
 
         Cache::shouldReceive('lock')
             ->once()

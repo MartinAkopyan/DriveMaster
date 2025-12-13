@@ -75,4 +75,91 @@ class CancelExpiredPendingLessonsJobTest extends TestCase
 
         Event::assertDispatched(LessonCancelledBySystem::class);
     }
+
+    /** @test */
+    public function cancel_expired_lessons_job_continues_on_individual_failure(): void
+    {
+        Event::fake();
+
+        $instructor = User::factory()->instructor()->approved()->create();
+        $student1 = User::factory()->student()->create();
+        $student2 = User::factory()->student()->create();
+
+        $lesson1 = Lesson::factory()->create([
+            'instructor_id' => $instructor->id,
+            'student_id' => $student1->id,
+            'status' => LessonStatus::PLANNED,
+            'start_time' => Carbon::now()->addDay(),
+            'end_time' => Carbon::now()->addDay()->addHours(2),
+            'created_at' => Carbon::now()->subHours(30),
+        ]);
+
+        $lesson2 = Lesson::factory()->create([
+            'instructor_id' => $instructor->id,
+            'student_id' => $student2->id,
+            'status' => LessonStatus::PLANNED,
+            'start_time' => Carbon::now()->addDay(),
+            'end_time' => Carbon::now()->addDay()->addHours(2),
+            'created_at' => Carbon::now()->subHours(30),
+        ]);
+
+        $lessonService = Mockery::mock(LessonBookingService::class);
+        $lessonService->shouldReceive('getExpiredPendingLessons')
+            ->once()
+            ->andReturn(collect([$lesson1, $lesson2]));
+
+        $lessonService->shouldReceive('cancelLessonAutomatically')
+            ->with(Mockery::on(fn($l) => $l->id === $lesson1->id), Mockery::any())
+            ->andThrow(new \Exception('Database error'));
+
+        $lessonService->shouldReceive('cancelLessonAutomatically')
+            ->with(Mockery::on(fn($l) => $l->id === $lesson2->id), Mockery::any())
+            ->andReturnUsing(function ($lesson, $reason) {
+                $lesson->status = LessonStatus::CANCELLED;
+                $lesson->cancel_reason = $reason;
+                $lesson->save();
+                return $lesson;
+            });
+
+        Log::shouldReceive('error')->once()
+            ->with('Failed to auto-cancel lesson', Mockery::on(function ($context) use ($lesson1) {
+                return $context['lesson_id'] === $lesson1->id;
+            }));
+
+        Log::shouldReceive('info')->once();
+
+        $job = new CancelExpiredPendingLessonsJob();
+
+        $job->handle($lessonService);
+
+        $lesson2->refresh();
+        $this->assertEquals(LessonStatus::CANCELLED, $lesson2->status);
+    }
+
+    /** @test */
+    public function cancel_expired_lessons_job_logs_failure(): void
+    {
+        Log::spy();
+
+        $exception = new \Exception('Database connection lost');
+        $job = new CancelExpiredPendingLessonsJob();
+
+        // Act
+        $job->failed($exception);
+
+        Log::shouldHaveReceived('error')
+            ->once()
+            ->with(
+                'CancelExpiredPendingLessons job failed',
+                Mockery::on(function ($context) use ($exception) {
+                    return $context['error'] === $exception->getMessage()
+                        && isset($context['trace'])
+                        && isset($context['file'])
+                        && isset($context['line']);
+                })
+            );
+
+        $this->assertTrue(true);
+    }
+
 }

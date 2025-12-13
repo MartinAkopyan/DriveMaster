@@ -104,4 +104,31 @@ class GenerateAdminReportJobTest extends TestCase
         $files = Storage::files('reports');
         $this->assertCount(4, $files);
     }
+
+    /** @test */
+    public function generate_admin_report_job_logs_failure(): void
+    {
+        $logCalls = [];
+
+        Log::shouldReceive('error')
+            ->once()
+            ->andReturnUsing(function ($message, $context) use (&$logCalls) {
+                $logCalls[] = ['message' => $message, 'context' => $context];
+            });
+
+        $exception = new \Exception('PDF generation failed');
+        $job = new GenerateAdminReportJob(
+            adminId: 1,
+            reportType: 'weekly',
+            dateFrom: '2024-12-01',
+            dateTo: '2024-12-07'
+        );
+
+        $job->failed($exception);
+
+        $this->assertCount(1, $logCalls);
+        $this->assertEquals('GenerateAdminReport job failed', $logCalls[0]['message']);
+        $this->assertEquals(1, $logCalls[0]['context']['admin_id']);
+        $this->assertEquals($exception->getMessage(), $logCalls[0]['context']['error']);
+    }
 }

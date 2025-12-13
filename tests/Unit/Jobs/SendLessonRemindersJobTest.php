@@ -113,4 +113,25 @@ class SendLessonRemindersJobTest extends TestCase
 
         Notification::assertNothingSent();
     }
+
+    /** @test */
+    public function send_lesson_reminders_job_logs_failure(): void
+    {
+        $logCalls = [];
+
+        Log::shouldReceive('error')
+            ->once()
+            ->andReturnUsing(function ($message, $context) use (&$logCalls) {
+                $logCalls[] = ['message' => $message, 'context' => $context];
+            });
+
+        $exception = new \Exception('SMTP connection failed');
+        $job = new SendLessonRemindersJob();
+
+        $job->failed($exception);
+
+        $this->assertCount(1, $logCalls);
+        $this->assertEquals('SendLessonReminders job failed', $logCalls[0]['message']);
+        $this->assertEquals($exception->getMessage(), $logCalls[0]['context']['error']);
+    }
 }

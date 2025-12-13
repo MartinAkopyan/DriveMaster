@@ -50,7 +50,7 @@ class CancelExpiredPendingLessonsJob implements ShouldQueue
     {
         Log::error('CancelExpiredPendingLessons job failed', [
             'error' => $exception->getMessage(),
-            'trace' => $exception->getTraceAsString(), // добавить trace
+            'trace' => $exception->getTraceAsString(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
         ]);

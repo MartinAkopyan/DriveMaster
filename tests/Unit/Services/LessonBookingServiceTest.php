@@ -214,9 +214,11 @@ class LessonBookingServiceTest extends TestCase
         $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
 
         $lock->shouldReceive('block')
+            ->with(5, Mockery::type('Closure'))
             ->once()
-            ->with(5, Mockery::type(\Closure::class))
-            ->andReturnUsing(fn ($_, $callback) => $callback());
+            ->andReturnUsing(function ($timeout, $callback) {
+                return $callback();
+            });
 
         Cache::shouldReceive('lock')
             ->once()
@@ -236,6 +238,79 @@ class LessonBookingServiceTest extends TestCase
         );
 
         $this->assertInstanceOf(Lesson::class, $result);
+        Cache::shouldHaveReceived('lock')->once();
+    }
+
+    /** @test */
+    public function throws_exception_when_distributed_lock_times_out(): void
+    {
+        Event::fake();
+
+        $this->userRepository
+            ->shouldReceive('getApprovedInstructor')
+            ->once()
+            ->andReturn($this->instructor);
+
+        $this->lessonRepository
+            ->shouldReceive('hasInstructorConflict')
+            ->never();
+
+        $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+
+        $lock->shouldReceive('block')
+            ->once()
+            ->with(5, Mockery::type(\Closure::class))
+            ->andThrow(new LessonBookingException());
+
+        Cache::shouldReceive('lock')
+            ->once()
+            ->with(Mockery::type('string'), 10)
+            ->andReturn($lock);
+
+        $this->expectException(LessonBookingException::class);
+        $this->expectExceptionMessage(
+            'Too many simultaneous booking attempts'
+        );
+
+        $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
+    }
+
+    /** @test */
+    public function calculates_slot_time_correctly(): void
+    {
+        Event::fake();
+
+        $expectedStartTime = Carbon::parse($this->date)->setTime(8,0);
+        $expectedEndTime = $expectedStartTime->copy()->addHours(2);
+
+        $this->userRepository
+            ->shouldReceive('getApprovedInstructor')
+            ->with($this->instructorId)
+            ->once()
+            ->andReturn($this->instructor);
+
+        $this->lessonRepository
+            ->shouldReceive('hasInstructorConflict')
+            ->once()
+            ->andReturn(false);
+
+        $this->lessonRepository
+            ->shouldReceive('createLesson')
+            ->once()
+            ->andReturnUsing(function ($data) use ($expectedStartTime, $expectedEndTime) {
+                $this->assertEquals(
+                    $expectedStartTime->format('Y-m-d H:i:s'),
+                    $data['start_time']->format('Y-m-d H:i:s')
+                );
+                $this->assertEquals(
+                    $expectedEndTime->format('Y-m-d H:i:s'),
+                    $data['end_time']->format('Y-m-d H:i:s')
+                );
+
+                return new Lesson($data);
+            });
+
+        $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
     }
 
 }

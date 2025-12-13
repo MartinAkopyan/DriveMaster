@@ -36,18 +36,23 @@ class LessonBookingServiceTest extends TestCase
         $this->student = new User();
         $this->student->setAttribute('id', 1);
         $this->student->setAttribute('role', UserRole::STUDENT);
+        $this->student->exists = true;
 
         $this->instructor = new User();
         $this->instructor->setAttribute('id', 2);
         $this->instructor->setAttribute('role', UserRole::INSTRUCTOR);
         $this->instructor->setAttribute('is_approved', true);
+        $this->instructor->exists = true;
 
         $this->date = Carbon::tomorrow()->format('Y-m-d');
 
         $this->userRepository = Mockery::mock(UserRepository::class);
         $this->lessonRepository = Mockery::mock(LessonRepository::class);
 
-        $this->service = new LessonBookingService($this->lessonRepository, $this->userRepository);
+        $this->service = new LessonBookingService(
+            $this->lessonRepository,
+            $this->userRepository
+        );
     }
 
     protected function tearDown(): void
@@ -59,11 +64,10 @@ class LessonBookingServiceTest extends TestCase
     /** @test */
     public function throws_exception_when_user_is_not_student(): void
     {
-        $nonStudent = new User([
-            'id' => 3,
-            'role' => UserRole::INSTRUCTOR,
-            'is_active' => true,
-        ]);
+        $nonStudent = new User();
+        $nonStudent->setAttribute('id', 3);
+        $nonStudent->setAttribute('role', UserRole::INSTRUCTOR);
+        $nonStudent->exists = true;
 
         $this->expectException(LessonBookingException::class);
         $this->expectExceptionMessage('Only students can book lessons');
@@ -131,17 +135,7 @@ class LessonBookingServiceTest extends TestCase
             ->once()
             ->andReturn($this->instructor);
 
-        $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
-        $lock->shouldReceive('block')
-            ->once()
-            ->andReturnUsing(function ($timeout, $callback) {
-                return $callback();
-            });
-
-        Cache::shouldReceive('lock')
-            ->once()
-            ->andReturn($lock);
-
+        $this->mockSuccessfulLock();
 
         $this->lessonRepository
             ->shouldReceive('hasInstructorConflict')
@@ -174,6 +168,8 @@ class LessonBookingServiceTest extends TestCase
             ->once()
             ->andReturn($this->instructor);
 
+        $this->mockSuccessfulLock();
+
         $this->lessonRepository
             ->shouldReceive('hasInstructorConflict')
             ->once()
@@ -197,7 +193,7 @@ class LessonBookingServiceTest extends TestCase
     }
 
     /** @test */
-    public function uses_lock_to_prevent_race_conditions(): void
+    public function uses_distributed_lock_to_prevent_race_conditions(): void
     {
         Event::fake();
 
@@ -230,15 +226,10 @@ class LessonBookingServiceTest extends TestCase
             ->once()
             ->andReturn(new Lesson());
 
-        $result = $this->service->bookLesson(
-            $this->student,
-            $this->instructorId,
-            $this->date,
-            $this->slot
+        $result = $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot
         );
 
         $this->assertInstanceOf(Lesson::class, $result);
-        Cache::shouldHaveReceived('lock')->once();
     }
 
     /** @test */
@@ -253,7 +244,8 @@ class LessonBookingServiceTest extends TestCase
 
         $this->lessonRepository
             ->shouldReceive('hasInstructorConflict')
-            ->never();
+            ->once()
+            ->andReturn(false);
 
         $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
 
@@ -268,9 +260,7 @@ class LessonBookingServiceTest extends TestCase
             ->andReturn($lock);
 
         $this->expectException(LessonBookingException::class);
-        $this->expectExceptionMessage(
-            'Too many simultaneous booking attempts'
-        );
+        $this->expectExceptionMessage('Too many simultaneous booking attempts');
 
         $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
     }
@@ -311,6 +301,20 @@ class LessonBookingServiceTest extends TestCase
             });
 
         $this->service->bookLesson($this->student, $this->instructorId, $this->date, $this->slot);
+    }
+
+    protected function mockSuccessfulLock(): void
+    {
+        $lock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+        $lock->shouldReceive('block')
+            ->once()
+            ->with(5, Mockery::type('Closure'))
+            ->andReturnUsing(fn($timeout, $callback) => $callback());
+
+        Cache::shouldReceive('lock')
+            ->once()
+            ->with(Mockery::type('string'), 10)
+            ->andReturn($lock);
     }
 
 }

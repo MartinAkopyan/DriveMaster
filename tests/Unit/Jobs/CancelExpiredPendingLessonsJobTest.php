@@ -139,7 +139,13 @@ class CancelExpiredPendingLessonsJobTest extends TestCase
     /** @test */
     public function cancel_expired_lessons_job_logs_failure(): void
     {
-        Log::spy();
+        $logCalls = [];
+
+        Log::shouldReceive('error')
+            ->once()
+            ->andReturnUsing(function ($message, $context) use (&$logCalls) {
+                $logCalls[] = ['message' => $message, 'context' => $context];
+            });
 
         $exception = new \Exception('Database connection lost');
         $job = new CancelExpiredPendingLessonsJob();
@@ -147,19 +153,13 @@ class CancelExpiredPendingLessonsJobTest extends TestCase
         // Act
         $job->failed($exception);
 
-        Log::shouldHaveReceived('error')
-            ->once()
-            ->with(
-                'CancelExpiredPendingLessons job failed',
-                Mockery::on(function ($context) use ($exception) {
-                    return $context['error'] === $exception->getMessage()
-                        && isset($context['trace'])
-                        && isset($context['file'])
-                        && isset($context['line']);
-                })
-            );
-
-        $this->assertTrue(true);
+        // Assert
+        $this->assertCount(1, $logCalls);
+        $this->assertEquals('CancelExpiredPendingLessons job failed', $logCalls[0]['message']);
+        $this->assertEquals($exception->getMessage(), $logCalls[0]['context']['error']);
+        $this->assertArrayHasKey('trace', $logCalls[0]['context']);
+        $this->assertArrayHasKey('file', $logCalls[0]['context']);
+        $this->assertArrayHasKey('line', $logCalls[0]['context']);
     }
 
 }

@@ -109,7 +109,7 @@ class LessonRepository
         return $lesson;
     }
 
-    public function cancelLesson(Lesson $lesson, int $canceledBy, ?string $reason = null): Lesson
+    public function cancelLesson(Lesson $lesson, ?int $canceledBy, ?string $reason = null): Lesson
     {
         $lesson->update([
             'status' => LessonStatus::CANCELLED,

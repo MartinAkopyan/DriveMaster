@@ -130,7 +130,7 @@ class LessonBookingService
 
     public function cancelLessonAutomatically(Lesson $lesson, string $reason): Lesson
     {
-        $lesson = $this->lessonRepo->cancelLesson($lesson, 0, $reason);
+        $lesson = $this->lessonRepo->cancelLesson($lesson, null, $reason);
 
         event(new LessonCancelledBySystem($lesson, $reason));
 

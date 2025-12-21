@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('end_time')->nullable();
             $table->enum('status', ['planned', 'confirmed', 'completed', 'cancelled'])->default(LessonStatus::PLANNED);
             $table->text('notes')->nullable();
-            $table->foreignId('cancelled_by')->constrained('users')->nullable();
+            $table->foreignId('cancelled_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('cancel_reason')->nullable();
             $table->index(['instructor_id', 'start_time']);
             $table->index(['student_id', 'start_time']);

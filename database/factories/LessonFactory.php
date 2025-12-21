@@ -23,15 +23,12 @@ class LessonFactory extends Factory
     public function definition(): array
     {
         return [
-            'instructor_id' => User::factory()->create([
-                'role' => UserRole::INSTRUCTOR,
-                'is_approved' => true
-            ]),
-            'student_id' => User::factory()->create([
-                'role' => UserRole::STUDENT,
-            ]),
+            'instructor_id' => User::factory(),
+            'student_id' => User::factory(),
             'start_time' => now()->addDays(3)->setHour(8),
-            'end_time' => now()->addDays(3)->setHour(10)
+            'end_time' => now()->addDays(3)->setHour(10),
+            'status' => LessonStatus::PLANNED,
+            'notes' => null,
         ];
     }
 

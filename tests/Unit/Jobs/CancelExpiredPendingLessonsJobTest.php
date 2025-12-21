@@ -150,10 +150,8 @@ class CancelExpiredPendingLessonsJobTest extends TestCase
         $exception = new \Exception('Database connection lost');
         $job = new CancelExpiredPendingLessonsJob();
 
-        // Act
         $job->failed($exception);
 
-        // Assert
         $this->assertCount(1, $logCalls);
         $this->assertEquals('CancelExpiredPendingLessons job failed', $logCalls[0]['message']);
         $this->assertEquals($exception->getMessage(), $logCalls[0]['context']['error']);

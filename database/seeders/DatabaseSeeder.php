@@ -6,6 +6,7 @@ namespace Database\Seeders;
 use App\Enums\LessonStatus;
 use App\Enums\UserRole;
 use App\Models\Lesson;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;

@@ -14,13 +14,13 @@ return new class extends Migration
     {
         Schema::create('lessons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('instructor_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('student_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('instructor_id')->nullable()->constrained('users');
+            $table->foreignId('student_id')->nullable()->constrained('users');
             $table->timestamp('start_time')->nullable();
             $table->timestamp('end_time')->nullable();
             $table->enum('status', ['planned', 'confirmed', 'completed', 'cancelled'])->default(LessonStatus::PLANNED);
             $table->text('notes')->nullable();
-            $table->unsignedBigInteger('cancelled_by')->nullable();
+            $table->foreignId('cancelled_by')->constrained('users')->nullable();
             $table->text('cancel_reason')->nullable();
             $table->index(['instructor_id', 'start_time']);
             $table->index(['student_id', 'start_time']);
